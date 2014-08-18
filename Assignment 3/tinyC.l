@@ -1,5 +1,6 @@
 %{
 	#include "y.tab.h"
+	char comment_word[1000];int comment_index=0;
 %}
 
 
@@ -43,9 +44,10 @@ STRING_LITERAL \"{S_CHAR_SEQUENCE}?\"
 
 
 
-
-
+%x comment
 %%
+
+
 auto	 |
 break	 |
 case	 |
@@ -93,7 +95,6 @@ _Imaginary {
 
 
 
-
 {INTEGER_CONSTANT}/{WHITE_SPACE} printf(" <INTEGER_CONSTANT %s >",yytext);
 {FLOATING_CONSTANT}/{WHITE_SPACE} printf(" <FLOATING_CONSTANT %s >",yytext);
 {CHARACTER_CONSTANT}/{WHITE_SPACE} printf(" <CHARACTER_CONSTANT %s >",yytext);
@@ -101,7 +102,7 @@ _Imaginary {
 
 {STRING_LITERAL}/{WHITE_SPACE} printf(" <STRING_LITERAL %s >",yytext);
 
-{IDENTIFIER}/{WHITE_SPACE} printf(" <IDENTIFIER %s >",yytext);
+{IDENTIFIER} printf(" <IDENTIFIER %s >",yytext);
 
 
 "[" |
@@ -154,12 +155,26 @@ _Imaginary {
 
 
 
-\/\*((.|\n)*)\*\/ printf("<COMMENT %s >",yytext);
+
+\/\* 		BEGIN(comment);
+<comment>[^*]* |
+<comment>"*"+[^*/\n]*  {
+						for(int i=0;i<yyleng;i++)comment_word[comment_index++]=yytext[i];
+						}
+<comment>"*"+"/" {
+					printf("<COMMENT %s*/>",comment_word);
+					comment_index=0;
+					BEGIN(INITIAL);
+				}
+
 
 \/\/.* printf("<COMMENT %s>",yytext+2);
-
 \n printf("\n");
-[ \t] 
+" " printf(" ");
+
+
+
+
 
 
 %%

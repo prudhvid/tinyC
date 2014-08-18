@@ -2,7 +2,7 @@
 	#include <string.h>
 	#include <iostream>
 	#include "stdio.h"
-	//#include "parser.h"
+	
 	extern int yylex();
 	void yyerror(char *s);
 	
