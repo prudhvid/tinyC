@@ -1,21 +1,31 @@
 compiler: y.tab.o lex.yy.o myfile.o
-	g++ myfile.o lex.yy.o y.tab.o -lfl
+	g++ lex.yy.o y.tab.o ass5_12CS10037_translator.o quad.o SymbolTable.o myfile.o -lfl
 
 myfile.o: myfile.c
 	g++ -c myfile.c -lfl
 
-y.tab.o: y.tab.c
+y.tab.o: y.tab.c y.tab.h
 	g++ -c y.tab.c 
 
-lex.yy.o: lex.yy.c
-	g++ -c lex.yy.c 
+lex.yy.o: lex.yy.c ass5_12CS10037_translator.o
+	g++ -c lex.yy.c
 
-lex.yy.c: y.tab.h ass3_12CS10037.l
-	flex ass3_12CS10037.l
+lex.yy.c: y.tab.h ass5_12CS10037.l ass5_12CS10037_translator.o
+	flex ass5_12CS10037.l
 
-y.tab.c: ass3_12CS10037.y
-	yacc -dvl ass3_12CS10037.y
+y.tab.c: ass5_12CS10037.y
+	yacc -dvl ass5_12CS10037.y
 
+
+
+ass5_12CS10037_translator.o:ass5_12CS10037_translator.h ass5_12CS10037_translator.cpp quad.o SymbolTable.o
+	g++ -c ass5_12CS10037_translator.cpp
+
+quad.o: quad.cpp quad.h y.tab.h
+	g++ -c quad.cpp
+
+SymbolTable.o: SymbolTable.cpp SymbolTable.h
+	g++ -c SymbolTable.cpp
 
 clean:
-	rm y.tab.c lex.yy.c ass3_12CS10037.o
+	rm y.tab.c y.tab.h lex.yy.c ass5_12CS10037.o *.o

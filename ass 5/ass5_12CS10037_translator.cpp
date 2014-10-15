@@ -16,7 +16,3 @@ void backpatch(const ListType &v,int index)
 	
 
 	
-
-
-
-

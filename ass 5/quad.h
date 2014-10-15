@@ -1,5 +1,11 @@
 #ifndef _QUAD_H
 #define _QUAD_H
+#include <bits/stdc++.h>
+using namespace std;
+namespace quad
+{
+
+
 
 enum{
 	QIF=1,
@@ -12,7 +18,11 @@ enum{
 	QRENOTE,
 	QARRVAL,
 	QARRDEREF,
-	QGOTO
+	QGOTO,
+	QEQ_OP,
+	QNE_OP,
+	QGE_OP,
+	QLE_OP
 };
 
 class Quad{
@@ -24,9 +34,17 @@ public:
 	Quad(char* s1,char* s2);
 	Quad(int op,int index);
 	void print();
-	void setArg1(char *s);
+	Quad(int op1, const string &s1, const string &s2, const string &s3);
+	Quad(int op1,const string &s1,const string &s2);
+	Quad(int op1, const string &s, int num);
+	Quad(const string & s1,const string & s2);
+	inline void setArg1(const string &s){
+		this->arg1=strdup(s.c_str());
+	}
 	static void emit(const Quad& q);
 };
+
+}
 
 
 #endif

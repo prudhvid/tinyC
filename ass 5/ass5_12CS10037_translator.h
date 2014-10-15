@@ -1,13 +1,16 @@
 #ifndef _TRANSLATOR_H
 #define _TRANSLATOR_H 
 #include "quad.h"
-
+#include "SymbolTable.h"
 #include <bits/stdc++.h>
 
-extern Quad *quadArray;
-
- 
+extern std::vector<quad::Quad> quadArray;
 using namespace std;
+
+class SymbolTable;
+
+
+
 typedef std::vector<int> ListType;
 
 inline ListType makelist(int index){
