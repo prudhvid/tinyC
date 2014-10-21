@@ -21,6 +21,9 @@ int main()
 		while(d1==d5)d1=d1+1;
 		d4=(d3+d4)*d5;
 		d5=d3&&d4+5.6;
+		do{
+			d5=d5*4+56.78;
+		}while(d4*d5);
 	}
 	int x1,x2;
 }

@@ -357,13 +357,13 @@ iteration_statement
 	}
 	| DO MIndex statement WHILE '('MIndex boolExpression ')' ';' 
 	{
+		$$=new vi();
 		*$$=$7->fl;
 		backpatch($7->tl,$2);
 		backpatch(*$3,$6);
 	}
 	| FOR '(' expression_statement expression_statement ')' statement 
-	| FOR '(' expression_statement MIndex expression_statement NList MIndex expression NList ')'
-																	MIndex statement 
+	| FOR '(' expression_statement MIndex expression_statement NList MIndex expression NList ')'																MIndex statement 
 	{
 		quadArray.push_back(Quad(QGOTO,$7));
 		backpatch(*$9,$4);
