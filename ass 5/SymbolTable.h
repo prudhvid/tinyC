@@ -2,33 +2,59 @@
 #define _SYMBOL_TABLE_H
 
 #include <bits/stdc++.h>
+
 using namespace std;
 
+typedef long long ll;
+typedef unsigned long long ull;
+typedef pair<int,int> ii;
+typedef vector<int> vi;
+typedef vector <ii> vii;
+typedef pair<long,long> pll;
+typedef vector<ll> vll;
+typedef vector <pll> vpll;
+
+
+
+#define FI(n) for(int i=0;i<n;i++)
+#define FI1(n) for(int i=1;i<=n;i++)
+#define FJ(n) for(int j=0;j<n;j++)
+#define FJ1(n) for(int j=1;j<=n;j++)
+#define For(i,a,b) for(int i=a;i<b;i++)
+#define tr(c, it)   for(typeof(c.begin()) it = c.begin(); it != c.end(); it++)
+
+
+
+
+
+using namespace std;
 
 class SymbolTable;
 class SFields;
 const unsigned int  SIZE_OF_INT=4;
 const unsigned int  SIZE_OF_DOUBLE=8;
 const unsigned int  SIZE_OF_CHAR=1;
+const unsigned int  SIZE_OF_POINTER=4;
 
 
 
 enum {
-		intT=1,
+		doubleT=1,
+		intT,
 		charT,
-		doubleT,
-		voidT
+		pointerT,
+		arrayT,
+		voidT,
+		funcT
 };
 
+const int sizeArrayNOD[]={0,SIZE_OF_DOUBLE,SIZE_OF_INT,SIZE_OF_CHAR,SIZE_OF_POINTER};
+const string nameSizeArray[]={"","double","int","char","pointer","array"};
+typedef std::vector<pair<int, int> > Type;
+typedef std::vector<int> ListType;
 
 
-union Type{
-	int pre;
-	int ARRAY[100];
-	int POINTER[100];
-};
-
-
+int getSize(const Type &t);
 struct Fields{
 	public:
 		Type type;
@@ -37,25 +63,45 @@ struct Fields{
 		int offset;
 		SymbolTable* nestedTable;
 		string name;
-		Fields():type(),loc(NULL),size(4),offset(0),nestedTable(NULL){}
+		union Val{
+			int intVal;
+			double doubleVal;
+			char* stringVal;
+			char charVal;
+		}val;
+		bool isConst;
+		bool isBoolExp;
+		ListType tl,fl;
+		Fields():type(),loc(NULL),size(4),offset(0),nestedTable(NULL),
+				isConst(false),isBoolExp(false)
+				{}
 
 		void update(int type1,unsigned int size1,int offset1)
 		{
-			type.pre =type1;
+			type.push_back(make_pair(type1, 0));
 			size=size1;
 			offset=offset1;
 		}
 
-		void update(Type& type1,unsigned int size1,int offset1)
+		void update(const Type& type1,unsigned int size1,int offset1)
 		{
-			type=type;
+			// printf("updating %s\n",name.c_str() );
+			type=type1;
 			size=size1;
 			offset=offset1;
 		}
-		void update(const Fields* f)
+		void update(Fields* f)
 		{
 			type=f->type;
 			this->size=f->size;
+		}
+		void print()
+		{	
+			printf("%s\t%d\t%d\t",name.c_str(),size,offset);
+			tr(type, it){
+				printf("(%s %d)   ",nameSizeArray[it->first].c_str(),it->second );
+			}
+			printf("\n");
 		}
 };
 
@@ -63,14 +109,14 @@ struct Fields{
 
 class SFields:public Fields{
 	public:
-		SFields(const Fields& f){}
+
+		SFields(const Fields& f)
+			:Fields(f)
+			{}
 		SFields():Fields(){}
 };
 
 class SymbolTable{
-
-
-	// std::map<string, SFields> table;
 	map<string,int> nameindex;
 	std::vector<SFields> table;
 	int n;
@@ -81,13 +127,9 @@ public:
 	static int tcount;
 	static Fields* gentemp(SymbolTable &st);
 	void print();
-	// inline Type getType(const string& s){return table[s].type;}
-	// inline char* getlocue(const string &s){return table[s].loc;}
-	// inline unsigned int getSize(const string &s){return table[s].size;}
-	// inline int getOffset(const string &s){return table[s].offset;} 
-	// inline SymbolTable* getNestedTable(const string &s){return table[s].nestedTable;}
 	void update(const string &s,const Fields &f);
+	void update(Fields* f,const Type& t);
+	void update(Fields* f1,Fields* f2);
 };
-
 
 #endif

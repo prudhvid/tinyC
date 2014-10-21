@@ -5,7 +5,7 @@ myfile.o: myfile.c
 	g++ -c myfile.c -lfl
 
 y.tab.o: y.tab.c y.tab.h
-	g++ -c y.tab.c 
+	g++ -c -Wno-write-strings y.tab.c 
 
 lex.yy.o: lex.yy.c ass5_12CS10037_translator.o
 	g++ -c lex.yy.c

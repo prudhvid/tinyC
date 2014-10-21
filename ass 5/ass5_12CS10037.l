@@ -192,7 +192,6 @@ STRING_LITERAL \"{S_CHAR_SEQUENCE}?\"
 					BEGIN(INITIAL);
 				}
 
-
 \/\/.* {}
 
 

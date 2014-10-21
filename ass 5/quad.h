@@ -41,6 +41,9 @@ public:
 	inline void setArg1(const string &s){
 		this->arg1=strdup(s.c_str());
 	}
+	inline void setRes(const string &s){
+		this->res=strdup(s.c_str());
+	}
 	static void emit(const Quad& q);
 };
 

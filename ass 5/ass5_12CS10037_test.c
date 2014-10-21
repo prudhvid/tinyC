@@ -1,25 +1,27 @@
-int a,b,c;
-
-int x;
-int a,v,cd;
 
 
-// int main(int argc, char const *argv[])
-// {
-// 	if(a==b)
-// 		return 1;
-// 	for ( i = 0; i < 1000; ++i){
-// 		for ( i = 0; i < 2938; ++i){
-// 			if(a==b*293+292*n)
-// 				break;
-// 		}
-// 	}
 
-// 	while(i==0)
-// 		i++;
-// 	return 0;
-// }
 
-while(1){
+int main()
+{
+
+
 	
+
+		
+	int d1,d2,d3,d4,d5;
+	// int i1=4,i2=5,i3,i4,i5;
+	// d2=(d3*d4+i3*i4)/i3+(i3*i3+i3/d3);
+	
+	d3=4,d2=8;
+	while(d1!=d5)
+	{
+		if(d3==d4&&d1+1<=d4)
+			d1=d2*d4;
+		while(d1==d5)d1=d1+1;
+		d4=(d3+d4)*d5;
+		d5=d3&&d4+5.6;
+	}
+	int x1,x2;
 }
+

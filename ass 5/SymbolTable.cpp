@@ -1,12 +1,22 @@
 #include "SymbolTable.h"
 #include "bits/stdc++.h"
 using namespace std;
+
 int SymbolTable::tcount=0;
 
+bool sortCompare(const SFields &s1,const SFields& s2)
+{
+	if(s1.offset<=s2.offset)
+		return true;
+	return false;
+}
 
 SymbolTable::SymbolTable()
 :n(0),offset(0)
 {
+	nameindex.clear();
+	table.clear();
+	table.reserve(100);
 }
 
 Fields* SymbolTable::gentemp(SymbolTable &st)
@@ -16,6 +26,7 @@ Fields* SymbolTable::gentemp(SymbolTable &st)
 	sprintf(word, "%d",tcount++);
 	string tword="__t"+string(word);
 	st.nameindex[tword]=st.n++;
+
 	temp.name=tword;
 	st.table.push_back(temp);
 	return &(st.table[st.n-1]);
@@ -24,7 +35,11 @@ Fields* SymbolTable::gentemp(SymbolTable &st)
 Fields* SymbolTable::lookup(const string &s)
 {
 	if(nameindex.find(s)!=nameindex.end())
-		return &table[nameindex[s]];
+	{
+		Fields *f=&table[nameindex[s]];
+		return f;
+	}
+		
 	SFields f;
 	nameindex[s]=n++;f.name=s;
 	table.push_back(f);
@@ -45,85 +60,75 @@ void SymbolTable::update(const string &s,const Fields &f)
 
 void SymbolTable::print()
 {
-	for (int i = 0; i < table.size(); ++i){
-		SFields &sf=table[i];
-		printf("%d %s %d %s %u %d \n",i, sf.name.c_str(),sf.type.pre,sf.loc,sf.size,sf.offset);
-	}
+	// for (int i = 0; i < table.size(); ++i){
+	// 	SFields &sf=table[i];
+	// 	printf("%d %s %s %u %d \n",i, sf.name.c_str(),sf.loc,sf.size,sf.offset);
+	// }
+	printf("--------------------SymbolTable---------------------------\n");
+	std::vector<SFields> temp(table.begin(), table.end());
+	sort(temp.begin(), temp.end(),sortCompare);
+	int c=1;
+	tr(temp,it)	{
+		printf("%d\t%s\t%d\t%d\t",c, it->name.c_str(),it->size,it->offset);
+		For(i, 0, it->type.size()){
+			printf("(%s %d)  ",nameSizeArray[it->type[i].first].c_str(),
+								 it->type[i].second );
+		}
+		printf("\n");
+		c++;
+	}	
+	printf("-----------------------------------------------------------\n");
+}
+
+void SymbolTable::update(Fields* f,const Type& t)
+{
+	if(f==NULL)
+		throw "error in update function";
+	f->type=t;
+	f->size=getSize(t);
+	f->offset=offset;
+	offset+=f->size;
+}
+
+void SymbolTable::update(Fields* f1,Fields* f2)
+{
+	if(f1==NULL||f2==NULL)
+		throw "error in update function";
+	f1->type=f2->type;
+	f1->size=f2->size;
+	f1->offset=offset;
+	offset+=f2->size;
 }
 
 
-// #include <bits/stdc++.h>
-// #define gc getchar
-// #define MALLOC(name,type,n) (name=(type*)malloc(sizeof(type)*(n)))
-// using namespace std;
-// const int INF=123456789;
-// #define ESP (1e-9)
+
+int getSize(const Type &t)
+{
+	int val=0;
+	int vsize=t.size();
+	if(t[0].first==pointerT)
+		return SIZE_OF_POINTER;
 
 
-// typedef long long ll;
-// typedef unsigned long long ull;
-// typedef pair<int,int> ii;
-// typedef vector<int> vi;
-// typedef vector <ii> vii;
-// typedef pair<long,long> pll;
-// typedef vector<ll> vll;
-// typedef vector <pll> vpll;
+	for (int i = vsize-1; i >=0 ; --i){
+		int ff=t[i].first,ss=t[i].second;
+		switch(ff){
+			case intT:
+			case charT:
+			case doubleT:
+				val+=sizeArrayNOD[ff];
+				break;
+			case arrayT:
+				val=val*ss;	
+				break;
+			case pointerT:
+				val=4;
+		}			
+	}
+	return val;
+}
 
-
-
-// #define FI(n) for(int i=0;i<n;i++)
-// #define FI1(n) for(int i=1;i<=n;i++)
-// #define FJ(n) for(int j=0;j<n;j++)
-// #define FJ1(n) for(int j=1;j<=n;j++)
-// #define For(i,a,b) for(int i=a;i<b;i++)
-// #define tr(c, it)   for(typeof(c.begin()) it = c.begin(); it != c.end(); it++)
-
-
-
-// template<class T>
-// void scanint(T &x)
-// {
-//     register int c = gc();
-//     x = 0;
-//     int m=0;
-//     if(c=='-')
-//     	m=1;
-//     for(;(c<48 || c>57);c = gc());
-//     for(;c>47 && c<58;c = gc()) {x = (x<<1) + (x<<3) + c - 48;}
-//     if(m==1)
-//     	x*=-1;
-// }
-
-// //input macros
-// #define S(n)        (scanint(n))
-// #define S2(a,b)     scanint(a);scanint(b)
-// #define Sc(n)       (n=getchar())            
-// #define Sf(n)       scanf("%lf",&n)
-// #define Sf2(a,b)    scanf("%lf%lf",&a,&b)
-// #define INS(n) int n;S(n);
-// #define INS2(n,m) int n,m;S2(n,m);
-
-
-// //output macros
-// #define Pr(n)                       printf("%d ",n)
-// #define Prn(n)                      printf("%d\n",n)
-// #define Prc(n)                      printf("%c",n)
-// #define Prcn(n)                     printf("%c\n",n)
-// #define Prl(n)                      printf("%I64d ",n)
-// #define Prln(n)                     printf("%I64d\n",n)
-// #define Prf(n)                      printf("%lf ",n)
-// #define Prfn(n)                     printf("%lf\n",n)
-// #define Prs(n)                      printf("%s ",n)
-// #define Prsn(n)                     printf("%s\n",n)
-
-
-
-// //useful functions
-
-
-
-
-
+	
 
 
 

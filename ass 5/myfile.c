@@ -6,7 +6,7 @@ extern int yylex();
 extern int yyparse();
 extern char* yytext;
 SymbolTable *st=new SymbolTable();
-
+extern int line_number;
 
 void yyerror(char* s)
 {
@@ -14,10 +14,30 @@ void yyerror(char* s)
 }
 int main()
 {
-  freopen("ass3_12CS10037_test.c", "r", stdin);
+  freopen("ass5_12CS10037_test.c", "r", stdin);
   int token;
   std::string s;
-  // while((token=yylex())){
+  try{
+    yyparse();  
+  }
+  catch(const char* p)
+  {
+    printf("\nERROR: %s on line_number %d\n",p,line_number+1 );
+  }
+  // while(yylex());
+  st->print();
+
+  for (int i = 0; i <quadArray.size() ; ++i){
+    printf("%3d : ",i );
+    quad::Quad::emit(quadArray[i]);
+  }
+  return 0;
+}
+
+
+
+
+// while((token=yylex())){
   //  switch(token){
   //    case 0:s="KW "+std::string(yytext);
   //    break;
@@ -65,10 +85,3 @@ int main()
   //  printf("< %s > ",s.c_str());
   // }
   // printf("%s\n", yytext);
-  yyparse();
-  st->print();
-  for (int i = 0; i <quadArray.size() ; ++i){
-    quad::Quad::emit(quadArray[i]);
-  }
-  return 0;
-}
