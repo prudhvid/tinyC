@@ -71,6 +71,7 @@
 %type <sentry> relational_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression
 %type <sentry> expression  initializer init_declarator direct_declarator declarator parameter_declaration logical_or_expression
 	logical_and_expression conditional_expression assignment_expression constant_expression changeBoolTemp logicalTempRule boolExpression
+	boolExpressionStatement
 %type <intval> type_specifier declaration_specifiers unary_operator
 %type <int_pair> pointer
 %type <sentryList> identifier_list  parameter_list 
@@ -362,12 +363,15 @@ iteration_statement
 		backpatch($7->tl,$2);
 		backpatch(*$3,$6);
 	}
-	| FOR '(' expression_statement expression_statement ')' statement 
-	| FOR '(' expression_statement MIndex expression_statement NList MIndex expression NList ')'																MIndex statement 
+	
+	| FOR '(' expression_statement MIndex boolExpressionStatement
+		MIndex expression NList ')' MIndex	statement
 	{
-		quadArray.push_back(Quad(QGOTO,$7));
-		backpatch(*$9,$4);
-		backpatch(*$6,$11);
+		backpatch($5->tl,$10);
+		$$=new vi();
+		quadArray.push_back(Quad(QGOTO,$6));
+		backpatch(*$8,$4);
+		*$$=$5->fl;
 	}
 	
 	;
@@ -379,12 +383,23 @@ jump_statement
 
 
 NList
-	:
-	{	
+	:{	
 		$$=new vi();
 		$$->push_back(nextInst());
 		quadArray.push_back(Quad(QGOTO,"...",0));
 	 }
+	;
+boolExpressionStatement
+	: ';' 
+	{
+		GENTEMP($$);
+		$$->isBoolExp=true;
+		$$->tl=makelist(nextInst());
+		quadArray.push_back((Quad(QGOTO,"...",0)));
+		$$->fl=makelist(nextInst());
+		quadArray.push_back((Quad(QGOTO,"...",0)));
+	}
+	| boolExpression ';' {$$=$1;}
 	;
 boolExpression
 	:expression
@@ -473,7 +488,24 @@ postfix_expression
 	: primary_expression {$$=$1;}
 	| postfix_expression '[' expression ']'
 	{
+		if($$->type[0].first!=arrayT)
+			throw "not an arrayT";
+		GENTEMP($$);
+		vii temp($1->type.begin()+1,$1->type.end());
+		int s=getSize(temp);
+		char word[50];sprintf(word,"%d",s);
+		Fields *f1,*f2;
+		GENTEMP(f1);GENTEMP(f2);
+		f1->type.push_back(ii(intT,0));
+		f2->type.push_back(ii(intT,0));
+		UPDATE(f1);UPDATE(f2);
+		quadArray.push_back(Quad('*',f2->name,$3->name,word));
 
+
+		quadArray.push_back(Quad('+',f1->name,$1->name,f2->name));
+		quadArray.push_back(Quad('*',$$->name,f1->name));
+		$$->type=temp;
+		UPDATE($$);
 	}
 	| postfix_expression '(' ')' 
 	| postfix_expression '(' argument_expression_list ')'
@@ -778,7 +810,11 @@ assignment_expression
 	{
 		//quadArray.push_back(Quad($$))
 		//$$=changeTypeNEmit($1,$3,'=');
-		$$=$3;
+		int check=typeCheck($$->type,$1->type)&&typeCheck($1->type,$3->type);
+		if(check==0)
+			throw "type mismatch";
+		quadArray.push_back(Quad($1->name,$3->name));
+		$$=$1;
 	}
 	;
 
@@ -1035,5 +1071,13 @@ void int2Bool(Fields* f)
 
 inline void getValueNBackpatch(Fields* f)
 {
-	
+	//backpatch(f->tl,nextInst());
+	//quadArray.push_back(Quad(f->name,"1"));
+	//f->tl=makelist(nextInst());
+	//quadArray.push_back(Quad(QGOTO,"...",0));
+
+	//backpatch(f->fl,nextInst());
+	//quadArray.push_back(Quad(f->name,"0"));
+	//f->fl=makelist(nextInst());
+	//quadArray.push_back(Quad(QGOTO,"...",0));
 }

@@ -17,7 +17,10 @@ Quad::Quad(int op1,const string &s1,const string &s2,const string& s3)
 
 Quad::Quad(int op1,const string &s1,const string &s2)
 {
-	Quad(op1,s1.c_str(),s2.c_str());
+	op=op1;
+	res=strdup(s1.c_str());
+	arg1=strdup(s2.c_str());
+	arg2=NULL;
 }
 
 
