@@ -8,7 +8,9 @@
 	extern int yylex();
 	extern void yyerror(char *s);
 	std::vector<quad::Quad> quadArray;
-	extern SymbolTable* st;
+	SymbolTable* st=new SymbolTable();
+	extern SymbolTable* _GLOBST;
+	
 	extern char* yytext;
 	using namespace quad;
 	//int offset=0;
@@ -69,9 +71,9 @@
 %type <sentry> id_parser CONSTANT STRING_LITERAL 
 %type <sentry> primary_expression postfix_expression unary_expression cast_expression multiplicative_expression additive_expression shift_expression
 %type <sentry> relational_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression
-%type <sentry> expression  initializer init_declarator direct_declarator declarator parameter_declaration logical_or_expression
+%type <sentry> expression  initializer init_declarator direct_declarator declarator logical_or_expression
 	logical_and_expression conditional_expression assignment_expression constant_expression changeBoolTemp logicalTempRule boolExpression
-	boolExpressionStatement
+	boolExpressionStatement function_definition
 %type <intval> type_specifier declaration_specifiers unary_operator
 %type <int_pair> pointer
 %type <sentryList> identifier_list  parameter_list 
@@ -85,8 +87,11 @@
 
 
 declaration
-	: declaration_specifiers ';'
+	: declaration_specifiers ';' 
 	| declaration_specifiers init_declarator_list ';'
+	{
+		printf("declaration");
+	}
 	;
 
 declaration_specifiers
@@ -207,25 +212,23 @@ parameter_type_list
 	;
 
 parameter_list
-	: parameter_declaration
+	: declaration_specifiers declarator
 	{
-		$$=new vector<Fields*>();
-		$$->push_back($1);
+		SFields f1=*$2;
+		st=new SymbolTable();
+		Fields *f=st->lookup(f1.name);
+		int s=f1.type.size();
+		f->type=f1.type;
+		f->type.push_back(ii($1,0));
+		UPDATE(f);
 	}
-	| parameter_list ',' parameter_declaration
+	| parameter_list ',' declaration_specifiers declarator
 	{
-		$$=$1;
-		$$->push_back($3);
+		$4->type.push_back(ii($3,0));
+		UPDATE($4);
 	}
 	;
 
-parameter_declaration
-	: declaration_specifiers declarator
-	{
-		$2->type.push_back(ii(_GLOBALTYPE,0));
-		$$=$2;
-	}
-	;
 
 identifier_list
 	: id_parser
@@ -421,10 +424,27 @@ external_declaration
 
 function_definition
 	: declaration_specifiers declarator declaration_list compound_statement
+	{
+		$$=_GLOBST->lookup($2->name);
+		$$->type=$2->type;
+		$$->type.push_back(ii($1,0));
+		UPDATE($$);
+		$$->nestedTable=st;
+		st->print();
+		st=_GLOBST;
+	}
 	| declaration_specifiers declarator compound_statement
-	| declarator declaration_list compound_statement
-	| declarator compound_statement
+	{
+		$$=_GLOBST->lookup($2->name);
+		$$->type=$2->type;
+		$$->type.push_back(ii($1,0));
+		UPDATE($$);
+		$$->nestedTable=st;
+		st->print();
+		st=_GLOBST;
+	}
 	;
+
 declaration_list
 	: declaration
 	| declaration_list declaration
@@ -508,12 +528,24 @@ postfix_expression
 	| postfix_expression '(' ')' 
 	| postfix_expression '(' argument_expression_list ')'
 	| postfix_expression INC_OP
+	{
+		GENTEMP($$);
+		$$->type=$1->type;
+		UPDATE($$);
+		quadArray.push_back(Quad('+',$$->name,$1->name,"1"));
+	}
 	| postfix_expression DEC_OP
+	{
+		GENTEMP($$);
+		$$->type=$1->type;
+		UPDATE($$);
+		quadArray.push_back(Quad('-',$$->name,$1->name,"1"));
+	}
 	;
 
 argument_expression_list
 	: assignment_expression 
-	| argument_expression_list ',' assignment_expression {printf("  argument_expression_list ") ;}
+	| argument_expression_list ',' assignment_expression
 	;
 
 unary_expression

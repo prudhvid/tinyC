@@ -5,7 +5,7 @@
 extern int yylex();
 extern int yyparse();
 extern char* yytext;
-SymbolTable *st=new SymbolTable();
+SymbolTable* _GLOBST=new SymbolTable();
 extern int line_number;
 
 void yyerror(char* s)
@@ -25,7 +25,7 @@ int main()
     printf("\nERROR: %s on line_number %d\n",p,line_number+1 );
   }
   // while(yylex());
-  st->print();
+  _GLOBST->print();
 
   for (int i = 0; i <quadArray.size() ; ++i){
     printf("%3d : ",i );

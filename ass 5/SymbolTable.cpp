@@ -64,6 +64,7 @@ void SymbolTable::print()
 	// 	SFields &sf=table[i];
 	// 	printf("%d %s %s %u %d \n",i, sf.name.c_str(),sf.loc,sf.size,sf.offset);
 	// }
+	
 	printf("--------------------SymbolTable---------------------------\n");
 	std::vector<SFields> temp(table.begin(), table.end());
 	sort(temp.begin(), temp.end(),sortCompare);
@@ -76,8 +77,11 @@ void SymbolTable::print()
 		}
 		printf("\n");
 		c++;
+
 	}	
 	printf("-----------------------------------------------------------\n");
+
+	
 }
 
 void SymbolTable::update(Fields* f,const Type& t)
