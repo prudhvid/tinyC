@@ -494,18 +494,16 @@ postfix_expression
 		vii temp($1->type.begin()+1,$1->type.end());
 		int s=getSize(temp);
 		char word[50];sprintf(word,"%d",s);
-		Fields *f1,*f2;
-		GENTEMP(f1);GENTEMP(f2);
+		Fields *f1;
+		GENTEMP(f1);
 		f1->type.push_back(ii(intT,0));
-		f2->type.push_back(ii(intT,0));
-		UPDATE(f1);UPDATE(f2);
-		quadArray.push_back(Quad('*',f2->name,$3->name,word));
-
-
-		quadArray.push_back(Quad('+',f1->name,$1->name,f2->name));
-		quadArray.push_back(Quad('*',$$->name,f1->name));
+		UPDATE(f1);
+		quadArray.push_back(Quad('*',f1->name,$3->name,word));
 		$$->type=temp;
 		UPDATE($$);
+
+		quadArray.push_back(Quad(QARRVAL,$$->name,
+						$1->name,f1->name));
 	}
 	| postfix_expression '(' ')' 
 	| postfix_expression '(' argument_expression_list ')'
