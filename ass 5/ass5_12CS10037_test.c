@@ -29,6 +29,6 @@ int main()
 			a[i][j]=0;
 	}
 	int a1=5;
-
+	a1=alla();
 	a1=diff2(diff2(1,2,3), diff(4.5, 3), diff(2.34,5));
 }

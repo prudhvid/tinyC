@@ -520,7 +520,16 @@ postfix_expression
 	}
 	| postfix_expression '(' ')' 
 	{
-
+		Fields* f=_GLOBST->search($1->name);
+		if(f==NULL)
+			throw "no function found with that name";
+		vector<Fields> v=f->nestedTable->getParamList();
+		if(v.size()!=0)
+			throw "no arguments given";
+		GENTEMP($$);
+		$$->type=f->type;
+		UPDATE($$);
+		quadArray.push_back(Quad(QCALL,$$->name,$1->name,"0"));
 	}
 	| postfix_expression '(' argument_expression_list ')'
 	{
