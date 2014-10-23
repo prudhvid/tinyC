@@ -22,7 +22,9 @@ enum{
 	QEQ_OP,
 	QNE_OP,
 	QGE_OP,
-	QLE_OP
+	QLE_OP,
+	QPARAM,
+	QCALL
 };
 
 class Quad{

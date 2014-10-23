@@ -8,7 +8,8 @@
 	extern int yylex();
 	extern void yyerror(char *s);
 	std::vector<quad::Quad> quadArray;
-	SymbolTable* st=new SymbolTable();
+	SymbolTable* _TEMPST=new SymbolTable();
+	SymbolTable* st=_TEMPST;
 	extern SymbolTable* _GLOBST;
 	
 	extern char* yytext;
@@ -76,7 +77,7 @@
 	boolExpressionStatement function_definition
 %type <intval> type_specifier declaration_specifiers unary_operator
 %type <int_pair> pointer
-%type <sentryList> identifier_list  parameter_list 
+%type <sentryList> identifier_list  parameter_list argument_expression_list
 %type <intval> '&' '*' '+' '-' '~' '!' MIndex relop
 %type <listType> NList statement compound_statement expression_statement 
 			selection_statement iteration_statement block_item block_item_list
@@ -125,7 +126,7 @@ init_declarator
 		//if(!res)
 		//	throw "type mismatch";
 		UPDATE($1,$3);
-
+		quadArray.push_back(Quad($$->name,$3->name));
 
 		//quadArray.push_back(Quad($$->loc,$3->loc));
 	}
@@ -160,7 +161,7 @@ declarator
 	{
 		$$=$2;
 		$$->type.push_back(ii(pointerT,$1.second));
-			}
+	}
 	| direct_declarator
 	{
 		$$=$1;
@@ -183,10 +184,13 @@ direct_declarator
 	}
 	| direct_declarator '(' parameter_type_list ')' 
 	{
-
+	
 	}
 	| direct_declarator '(' identifier_list ')'
 	| direct_declarator '(' ')'
+	{
+		st=new SymbolTable();
+	}
 	;
 
 
@@ -221,11 +225,13 @@ parameter_list
 		f->type=f1.type;
 		f->type.push_back(ii($1,0));
 		UPDATE(f);
+		st->paramNum++;
 	}
 	| parameter_list ',' declaration_specifiers declarator
 	{
 		$4->type.push_back(ii($3,0));
 		UPDATE($4);
+		st->paramNum++;
 	}
 	;
 
@@ -285,10 +291,6 @@ statement
 	| iteration_statement 
 	{
 		$$=$1;
-		printf("iteration_statement   ");
-		tr((*$$),it)
-			printf("%d ",*it);
-		printf("\n");
 	}
 	| jump_statement 
 	;
@@ -301,17 +303,10 @@ compound_statement
 
 block_item_list
 	: block_item {*$$=merge(*$$,*$1);
-		printf("block item   ");
-		tr((*$$),it)
-			printf("%d ",*it);
-		printf("\n");
 	}
 	| block_item_list MIndex block_item
 	{
-		printf("block item list   ");
-		tr((*$1),it)
-			printf("%d ",*it);
-		printf("index %d\n",$2);
+		
 		backpatch(*$1,$2);
 		$$=$3;
 	}
@@ -321,10 +316,6 @@ block_item
 	: declaration {$$=new vi();}
 	| statement{
 		$$=$1;
-		printf("block statement   ");
-		tr((*$$),it)
-			printf("%d ",*it);
-		printf("\n");
 	}
 	;
 
@@ -428,20 +419,22 @@ function_definition
 		$$=_GLOBST->lookup($2->name);
 		$$->type=$2->type;
 		$$->type.push_back(ii($1,0));
-		UPDATE($$);
+		_GLOBST->update($$,$$->type);
 		$$->nestedTable=st;
 		st->print();
-		st=_GLOBST;
+		_TEMPST->clearTable();
+		st=_TEMPST;
 	}
 	| declaration_specifiers declarator compound_statement
 	{
 		$$=_GLOBST->lookup($2->name);
 		$$->type=$2->type;
 		$$->type.push_back(ii($1,0));
-		UPDATE($$);
+		_GLOBST->update($$,$$->type);
 		$$->nestedTable=st;
 		st->print();
-		st=_GLOBST;
+		_TEMPST->clearTable();
+		st=_TEMPST;
 	}
 	;
 
@@ -526,26 +519,60 @@ postfix_expression
 						$1->name,f1->name));
 	}
 	| postfix_expression '(' ')' 
+	{
+
+	}
 	| postfix_expression '(' argument_expression_list ')'
+	{
+		Fields* f=_GLOBST->search($1->name);
+		if(f==NULL)
+			throw "no function found with that name";
+		vector<Fields> v=f->nestedTable->getParamList();
+		if(v.size()!=$3->size())
+			throw "number of arguments not matching";
+		For(i,0,v.size())
+		{
+			int check=typeCheck(v[i].type,$3->at(i)->type);
+			if(check==0)
+				throw "argument type not matching to call";
+			quadArray.push_back(Quad(QPARAM,$3->at(i)->name,""));
+		}
+		GENTEMP($$);
+		$$->type=f->type;
+		UPDATE($$);
+		char word[20];
+		sprintf(word,"%ld",v.size());
+		quadArray.push_back(Quad(QCALL,$$->name,$1->name,word));
+	}
 	| postfix_expression INC_OP
 	{
 		GENTEMP($$);
 		$$->type=$1->type;
 		UPDATE($$);
-		quadArray.push_back(Quad('+',$$->name,$1->name,"1"));
+		quadArray.push_back(Quad($$->name,$1->name));
+		quadArray.push_back(Quad('+',$1->name,$1->name,"1"));
 	}
 	| postfix_expression DEC_OP
 	{
 		GENTEMP($$);
 		$$->type=$1->type;
 		UPDATE($$);
-		quadArray.push_back(Quad('-',$$->name,$1->name,"1"));
+		quadArray.push_back(Quad($$->name,$1->name));
+		quadArray.push_back(Quad('-',$1->name,$1->name,"1"));
 	}
 	;
 
 argument_expression_list
 	: assignment_expression 
+	{
+		$$=new vector<Fields*>();
+		$$->push_back($1);
+	}
 	| argument_expression_list ',' assignment_expression
+	{
+		$$=$1;
+		$$->push_back($3);
+	}
 	;
 
 unary_expression

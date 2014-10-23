@@ -12,7 +12,7 @@ bool sortCompare(const SFields &s1,const SFields& s2)
 }
 
 SymbolTable::SymbolTable()
-:n(0),offset(0)
+:n(0),offset(0),paramNum(0)
 {
 	nameindex.clear();
 	table.clear();
@@ -60,12 +60,10 @@ void SymbolTable::update(const string &s,const Fields &f)
 
 void SymbolTable::print()
 {
-	// for (int i = 0; i < table.size(); ++i){
-	// 	SFields &sf=table[i];
-	// 	printf("%d %s %s %u %d \n",i, sf.name.c_str(),sf.loc,sf.size,sf.offset);
-	// }
 	
-	printf("--------------------SymbolTable---------------------------\n");
+	
+	printf("\n--------------------SymbolTable---------------------------\n");
+	printf("no of params=%d\n",paramNum );
 	std::vector<SFields> temp(table.begin(), table.end());
 	sort(temp.begin(), temp.end(),sortCompare);
 	int c=1;
@@ -104,7 +102,31 @@ void SymbolTable::update(Fields* f1,Fields* f2)
 	offset+=f2->size;
 }
 
+void SymbolTable::clearTable()
+{
+	this->nameindex.clear();
+	this->table.clear();
+	this->n=0;
+	this->offset=0;
+}
 
+Fields* SymbolTable::search(const string& s)
+{
+	if(nameindex.find(s)!=nameindex.end())
+	{
+		return &table[nameindex[s]];
+	}
+	return NULL;
+}
+std::vector<Fields> SymbolTable::getParamList()
+{
+	std::vector<SFields> temp(table.begin(), table.end());
+	sort(temp.begin(), temp.end(),sortCompare);
+	if(paramNum>0)
+		return std::vector<Fields>(temp.begin(),temp.begin()+paramNum);
+	std::vector<Fields> v;
+	return v;
+}	
 
 int getSize(const Type &t)
 {
@@ -132,7 +154,7 @@ int getSize(const Type &t)
 	return val;
 }
 
-	
+
 
 
 

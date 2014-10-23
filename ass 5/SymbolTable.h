@@ -71,6 +71,7 @@ struct Fields{
 		}val;
 		bool isConst;
 		bool isBoolExp;
+		
 		ListType tl,fl;
 		Fields():type(),loc(NULL),size(4),offset(0),nestedTable(NULL),
 				isConst(false),isBoolExp(false)
@@ -122,6 +123,7 @@ class SymbolTable{
 	int n;
 public:
 	int offset;
+	int paramNum;
 	SymbolTable();
 	Fields* lookup(const string &s);
 	static int tcount;
@@ -130,6 +132,9 @@ public:
 	void update(const string &s,const Fields &f);
 	void update(Fields* f,const Type& t);
 	void update(Fields* f1,Fields* f2);
+	void clearTable();
+	Fields* search(const string& s);
+	std::vector<Fields> getParamList();
 };
 
 #endif

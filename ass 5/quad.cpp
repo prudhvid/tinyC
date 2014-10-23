@@ -71,6 +71,9 @@ void Quad::emit(const Quad &q){
 				break;
 			case QRELIFLTE:printf("if %s <= %s goto %s\n",q.arg1,q.arg2,q.res );
 				break;
+			
+			case QCALL:printf("%s=call %s,%s\n",q.res,q.arg1,q.arg2 );
+				break;
 			default:
 			if(q.op<=255)
 				printf("%s = %s %c %s\n",q.res,q.arg1,q.op,q.arg2 );
@@ -90,7 +93,8 @@ void Quad::emit(const Quad &q){
 				break;
 			case QIFFALSE:printf("ifFalse %s goto %s\n",q.arg1,q.res );
 				break;
-
+			case QPARAM:printf("param %s\n",q.res );
+				break;
 			default:
 			if(q.op<=255)
 				printf("%s = %c %s\n",q.res,q.op,q.arg1 );
