@@ -31,6 +31,8 @@
 	inline void EMIT(){
 		Quad::emit(quadArray[(int)quadArray.size()-1]);
 	}
+	Fields* checkTypesNAssign(Fields* f1,Fields* f2);
+	
 	inline void getValueNBackpatch(Fields* f);
 	int _GLOBALTYPE;
 	Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op);
@@ -91,7 +93,6 @@ declaration
 	: declaration_specifiers ';' 
 	| declaration_specifiers init_declarator_list ';'
 	{
-		printf("declaration");
 	}
 	;
 
@@ -122,13 +123,9 @@ init_declarator
 	{
 		$$=$1;
 		$$->type.push_back(ii(_GLOBALTYPE,0));
-		//bool res=typeCheck($1,$3);
-		//if(!res)
-		//	throw "type mismatch";
-		UPDATE($1,$3);
-		quadArray.push_back(Quad($$->name,$3->name));
-
-		//quadArray.push_back(Quad($$->loc,$3->loc));
+		UPDATE($$);
+		Fields* f=checkTypesNAssign($$,$3);
+		quadArray.push_back(Quad($$->name,f->name));
 	}
 	;
 
@@ -539,13 +536,18 @@ postfix_expression
 		vector<Fields> v=f->nestedTable->getParamList();
 		if(v.size()!=$3->size())
 			throw "number of arguments not matching";
+
+		vector<Quad> quadTemp;
 		For(i,0,v.size())
 		{
-			int check=typeCheck(v[i].type,$3->at(i)->type);
-			if(check==0)
-				throw "argument type not matching to call";
-			quadArray.push_back(Quad(QPARAM,$3->at(i)->name,""));
+			//int check=typeCheck(v[i].type,$3->at(i)->type);
+			//if(check==0)
+			//	throw "argument type not matching to call";
+
+			Fields*f= checkTypesNAssign(&v[i],($3->at(i)));
+			quadTemp.push_back(Quad(QPARAM,f->name,""));
 		}
+		quadArray.insert(quadArray.end(),quadTemp.begin(),quadTemp.end());
 		GENTEMP($$);
 		$$->type=f->type;
 		UPDATE($$);
@@ -876,10 +878,13 @@ assignment_expression
 	{
 		//quadArray.push_back(Quad($$))
 		//$$=changeTypeNEmit($1,$3,'=');
-		int check=typeCheck($$->type,$1->type)&&typeCheck($1->type,$3->type);
-		if(check==0)
-			throw "type mismatch";
-		quadArray.push_back(Quad($1->name,$3->name));
+	//	int check=typeCheck($$->type,$1->type)&&typeCheck($1->type,$3->type);
+		//if(check==0)
+		//	throw "type mismatch";
+		//quadArray.push_back(Quad($1->name,$3->name));
+
+		Fields* f=checkTypesNAssign($1,$3);
+		quadArray.push_back(Quad($1->name,f->name));
 		$$=$1;
 	}
 	;
@@ -1014,6 +1019,19 @@ Fields* char2double(Fields* f)
 	return res;
 }
 
+
+Fields* double2char(Fields* f)
+{
+	Fields* res;
+	GENTEMP(res);
+	res->type.push_back(ii(doubleT,0));
+	UPDATE(res);
+	string val="double2char( ";
+	string end=" )";
+	quadArray.push_back(Quad(res->name,val+string(f->name)+end));
+	return res;
+}
+
 Fields* double2int(Fields* f)
 {
 	Fields* res;
@@ -1025,7 +1043,17 @@ Fields* double2int(Fields* f)
 	quadArray.push_back(Quad(res->name,val+string(f->name)+end));
 	return res;
 }
-
+Fields* int2char(Fields* f)
+{
+	Fields* res;
+	GENTEMP(res);
+	res->type.push_back(ii(doubleT,0));
+	UPDATE(res);
+	string val="int2char( ";
+	string end=" )";
+	quadArray.push_back(Quad(res->name,val+string(f->name)+end));
+	return res;
+}
 Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 {
 	
@@ -1147,3 +1175,33 @@ inline void getValueNBackpatch(Fields* f)
 	//f->fl=makelist(nextInst());
 	//quadArray.push_back(Quad(QGOTO,"...",0));
 }
+
+Fields* checkTypesNAssign(Fields* f1,Fields* f2)
+{
+	bool res=typeCheck(f1->type,f2->type);
+
+
+	if(!res){
+		if(f1->type.size()>1||f2->type.size()>1)
+			throw "assigning types dont match";
+		int t1=f1->type[0].first,t2=f2->type[0].first;
+
+		Fields *temp;
+		if(t1==intT&&t2==doubleT)
+			temp=double2int(f2);
+		else if(t1==intT&&t2==charT)
+			temp=char2int(f2);
+		else if(t1==charT&&t2==intT)
+			temp=int2char(f2);
+		else if(t1==charT&&t2==doubleT)
+			temp=double2char(f2);
+		else if(t1==doubleT&&t2==intT)
+			temp=int2double(f2);
+		else if(t1==doubleT&&t2==charT)
+			temp=char2double(f2);
+		return temp;
+	}
+	return f2;
+}
+
+
