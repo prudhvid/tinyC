@@ -109,4 +109,4 @@ void Quad::emit(const Quad &q){
 		printf("%s = %s\n",q.res,q.arg1 );
 }
 
-}
+}//end of quad namespace

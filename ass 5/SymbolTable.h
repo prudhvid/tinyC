@@ -5,6 +5,8 @@
 
 using namespace std;
 
+
+
 typedef long long ll;
 typedef unsigned long long ull;
 typedef pair<int,int> ii;
@@ -37,46 +39,77 @@ const unsigned int  SIZE_OF_CHAR=1;
 const unsigned int  SIZE_OF_POINTER=4;
 
 
-
+//enum to represnt all types possible
 enum {
-		doubleT=1,
-		intT,
-		charT,
-		pointerT,
-		arrayT,
-		voidT,
-		funcT
+	doubleT=1,
+	intT,
+	charT,
+	pointerT,
+	arrayT,
+	voidT,
+	funcT
 };
 
+//array to store the sizes of types defined in enum above
 const int sizeArrayNOD[]={0,SIZE_OF_DOUBLE,SIZE_OF_INT,SIZE_OF_CHAR,SIZE_OF_POINTER};
+
+//array to store the names of types defined in enum above
 const string nameSizeArray[]={"","double","int","char","pointer","array"};
+
+/*
+	Type is the type that I use to store all possible types that we can have using the above 
+	defined enums.
+
+	Each type is represented as an array of two things. 1->the type of type 2->size
+	soo 
+	int x[30][40] === array(30,array(40,int))
+	=== {(arrayT,30),(arrayT,40),(intT,0)}
+
+	int **x[20];
+
+	==={(arrayT,20),(pointerT,2),(intT,0)}
+	
+*/
 typedef std::vector<pair<int, int> > Type;
+
+/*
+	ListType is array type to store the indices of quads having dangling gotos
+*/
 typedef std::vector<int> ListType;
 
-
+//returns the size of a specific type
 int getSize(const Type &t);
+
+
+/*
+	This is the type present in the symbol table as a row.
+*/
 struct Fields{
 	public:
-		Type type;
-		char* loc;
-		unsigned int size;
-		int offset;
-		SymbolTable* nestedTable;
-		string name;
+		Type type; //type of symbol present
+		char* loc; //loc that it will be stored
+		unsigned int size; //size of the element
+		int offset; //offset in the symbol table
+		SymbolTable* nestedTable; //if it is the global symbolTable then it stores the 
+								//symboltable pointer of that function
+		string name; //name of the symbol
+
+		//used for constant folding val contains the val of the contant
 		union Val{
 			int intVal;
 			double doubleVal;
 			char* stringVal;
 			char charVal;
 		}val;
-		bool isConst;
-		bool isBoolExp;
+		bool isConst; //if the symbol present is actually a constant
+		bool isBoolExp; //if it is a boolean expression then t has true list and false lists
 		
-		ListType tl,fl;
+		ListType tl,fl;//true list and false lists
 		Fields():type(),loc(NULL),size(4),offset(0),nestedTable(NULL),
 				isConst(false),isBoolExp(false)
 				{}
 
+		//all posible updates available to change the values in ST using pointers
 		void update(int type1,unsigned int size1,int offset1)
 		{
 			type.push_back(make_pair(type1, 0));
@@ -117,23 +150,71 @@ class SFields:public Fields{
 		SFields():Fields(){}
 };
 
+
+/*
+	Class to represetnt the symoltable
+*/
 class SymbolTable{
-	map<string,int> nameindex;
+	
+	/*
+		The tabe is stored in form of array where every symbol is mapped to an 
+		index in this array
+	*/
 	std::vector<SFields> table;
-	int n;
+
+	/*
+		hashmap to store symbolnames to indices in the symboltable
+	*/
+	map<string,int> nameindex; 
+	/*
+		number of symbols present 
+	*/
+	int n; 
 public:
-	int offset;
-	int paramNum;
-	SymbolTable();
-	Fields* lookup(const string &s);
-	static int tcount;
+	/*
+		The current offset of ST
+	*/
+	int offset; 
+	int paramNum; //the number of parameters that it has
+	SymbolTable(); 
+	/*
+		A method to lookup an id (given its name or lexeme)
+		in the Symbol Table. If the id exists, the entry is
+		returned, otherwise a new entry is created.
+	*/
+	Fields* lookup(const string &s); 
+
+	static int tcount;//temporary count
+	/*
+		A static method to generate a new temporary, insert
+		it to the Symbol Table, and return a pointer to the
+		entry.
+	*/
 	static Fields* gentemp(SymbolTable &st);
+
+	/*	
+		prints all symbols and their data in tabular form
+	*/
 	void print();
+	/*
+		A method to update different fields of an existing
+		entry.All are overloaded forms for the same function
+	*/
 	void update(const string &s,const Fields &f);
 	void update(Fields* f,const Type& t);
 	void update(Fields* f1,Fields* f2);
+	/*
+		erase all contents of the current symboltable
+	*/
 	void clearTable();
+	/*
+		given a string searches if it is present in symboltable. Unlike 
+		lookup it doesnt add the given string to ST if it is not present
+	*/
 	Fields* search(const string& s);
+	/*
+		for a ST of function return all the list of params
+	*/
 	std::vector<Fields> getParamList();
 };
 
