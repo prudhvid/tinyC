@@ -284,10 +284,11 @@ initializer
 statement
 	: compound_statement {$$=$1;}
 	| expression_statement{$$=$1;}
-	| selection_statement {$$=$1;}
+	| selection_statement {$$=$1;printf("selection_statement");}
 	| iteration_statement 
 	{
 		$$=$1;
+		printf("iteration_statement");
 	}
 	| jump_statement 
 	;
@@ -299,11 +300,12 @@ compound_statement
 	;
 
 block_item_list
-	: block_item {*$$=merge(*$$,*$1);
+	: block_item 
+	{
+		*$$=merge(*$$,*$1);
 	}
 	| block_item_list MIndex block_item
 	{
-		
 		backpatch(*$1,$2);
 		$$=$3;
 	}
@@ -360,6 +362,7 @@ iteration_statement
 	{
 		backpatch($5->tl,$10);
 		$$=new vi();
+		backpatch(*$11,nextInst());
 		quadArray.push_back(Quad(QGOTO,$6));
 		backpatch(*$8,$4);
 		*$$=$5->fl;
@@ -421,6 +424,9 @@ function_definition
 		st->print();
 		_TEMPST->clearTable();
 		st=_TEMPST;
+		backpatch(*$4,nextInst());
+		quadArray.push_back(Quad("end of function","end of function"));
+		delete $4;
 	}
 	| declaration_specifiers declarator compound_statement
 	{
@@ -432,6 +438,9 @@ function_definition
 		st->print();
 		_TEMPST->clearTable();
 		st=_TEMPST;
+		backpatch(*$3,nextInst());
+		quadArray.push_back(Quad("end of function","end of function"));
+		delete $4;
 	}
 	;
 

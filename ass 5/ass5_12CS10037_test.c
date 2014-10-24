@@ -1,27 +1,4 @@
 
-
-int sum(int *x,int **y)
-{
-
-}
-
-int diff(double x,int y)
-{
-
-}
-int diff2(int x,int y,int z)
-{
-
-}
-int alla()
-{
-	int a,b,c;
-	a++;b++;
-}
-int tf(char a,double b,int c)
-{
-
-}
 int main()
 {
 
@@ -31,12 +8,16 @@ int main()
 	{
 		for(j=0;j<10;j++)
 			a[i][j]=0;
-		int x;
+		j=0;
+		if(j==1)
+			while(i<j)
+			{
+				j++;
+				do
+				{
+					j=j*29;
+				}while(j--);
+			}
 	}
-	char a1=5.456*67;
-	double d1=3,d4=6;
-	a1=a1*d4;
-	tf(a1, d4, a1);
-	a1=alla();
-	a1=diff2(diff2(1,2,3), diff(4.5, 3), diff(2.34,5));
+
 }
