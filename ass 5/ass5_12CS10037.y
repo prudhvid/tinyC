@@ -440,7 +440,7 @@ function_definition
 		st=_TEMPST;
 		backpatch(*$3,nextInst());
 		quadArray.push_back(Quad("end of function","end of function"));
-		delete $4;
+		delete $3;
 	}
 	;
 
