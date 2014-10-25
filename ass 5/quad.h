@@ -28,7 +28,9 @@ enum{
 	QPARAM, //function params
 	QCALL, //function call
 	QPOINTER,
-	QADDR
+	QADDR,
+	QRETURN_NULL,
+	QRETURN
 };
 
 /*

@@ -47,7 +47,7 @@ inline ListType merge(const vector<int>& v1,const ListType& v2){
 	quad’s on the list in v
 
 */
-void backpatch(const ListType &v,int index);
+void backpatch(ListType &v,int index);
 
 /*
 	A global function to check if E1 & E2 have same types

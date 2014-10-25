@@ -38,6 +38,9 @@
 	Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op);
 	pair<Fields*,Fields*> changeTypeNReturn(Fields* f1,Fields* f2);
 	void int2Bool(Fields* f);
+
+	int funcRetSet=0;
+	Type funcRetType;
 %}
 
 %union{
@@ -83,6 +86,7 @@
 %type <intval> MIndex relop
 %type <listType> NList statement compound_statement expression_statement 
 			selection_statement iteration_statement block_item block_item_list
+			
 
 
 %%
@@ -132,14 +136,14 @@ init_declarator
 
 
 type_specifier
-	: VOID {_GLOBALTYPE=voidT;$$=voidT;}
-	| CHAR {_GLOBALTYPE=charT;$$=charT;}
-	| INT {_GLOBALTYPE=intT;$$=intT;}
-	| DOUBLE {_GLOBALTYPE=doubleT;$$=doubleT;}
-	| SIGNED {_GLOBALTYPE=intT;$$=intT;}
-	| UNSIGNED {_GLOBALTYPE=intT;$$=intT;}
-	| COMPLEX {_GLOBALTYPE=intT;$$=intT;}
-	| IMAGINARY {_GLOBALTYPE=intT;$$=intT;}
+	: VOID {_GLOBALTYPE=voidT;$$=voidT;funcRetSet=(funcRetSet==0)?$$:funcRetSet;}
+	| CHAR {_GLOBALTYPE=charT;$$=charT;funcRetSet=(funcRetSet==0)?$$:funcRetSet;}
+	| INT {_GLOBALTYPE=intT;$$=intT;funcRetSet=(funcRetSet==0)?$$:funcRetSet;}
+	| DOUBLE {_GLOBALTYPE=doubleT;$$=doubleT;funcRetSet=(funcRetSet==0)?$$:funcRetSet;}
+	| SIGNED {_GLOBALTYPE=intT;$$=intT;funcRetSet=(funcRetSet==0)?$$:funcRetSet;}
+	| UNSIGNED {_GLOBALTYPE=intT;$$=intT;funcRetSet=(funcRetSet==0)?$$:funcRetSet;}
+	| COMPLEX {_GLOBALTYPE=intT;$$=intT;funcRetSet=(funcRetSet==0)?$$:funcRetSet;}
+	| IMAGINARY {_GLOBALTYPE=intT;$$=intT;funcRetSet=(funcRetSet==0)?$$:funcRetSet;}
 	;
 
 
@@ -181,12 +185,15 @@ direct_declarator
 	}
 	| direct_declarator '(' parameter_type_list ')' 
 	{
-	
+		funcRetType=$1->type;
+		funcRetType.push_back(ii(funcRetSet,0));
 	}
 	| direct_declarator '(' identifier_list ')'
 	| direct_declarator '(' ')'
 	{
 		st=new SymbolTable();
+		funcRetType=$1->type;
+		funcRetType.push_back(ii(funcRetSet,0));
 	}
 	;
 
@@ -290,7 +297,7 @@ statement
 		$$=$1;
 		printf("iteration_statement");
 	}
-	| jump_statement 
+	| jump_statement {$$=new vi();}
 	;
 
 
@@ -343,7 +350,7 @@ selection_statement
 		backpatch($3->tl,$5);
 		backpatch($3->fl,$9);
 		vi temp=merge(*$6,*$7);
-		*$$=merge($3->fl,*$10);
+		*$$=merge(temp,*$10);
 	}
 	;
 
@@ -379,7 +386,18 @@ iteration_statement
 
 jump_statement
 	: RETURN ';' 
+	{
+		if(funcRetType.size()>0&&funcRetType[0].first==voidT)
+			quadArray.push_back(Quad(QRETURN_NULL,0));
+		else
+			throw "return type not same";
+	}
 	| RETURN expression ';' 
+	{
+		Fields*f;GENTEMP(f);f->type=funcRetType;UPDATE(f);
+		f= checkTypesNAssign(f,$2);
+		quadArray.push_back(Quad(QRETURN,f->name,""));
+	}
 	;
 
 
@@ -433,6 +451,8 @@ function_definition
 		st=_TEMPST;
 		backpatch(*$4,nextInst());
 		quadArray.push_back(Quad("end of function","end of function"));
+		funcRetType.clear();
+		funcRetSet=0;
 		
 	}
 	| declaration_specifiers declarator compound_statement
@@ -447,7 +467,8 @@ function_definition
 		st=_TEMPST;
 		backpatch(*$3,nextInst());
 		quadArray.push_back(Quad("end of function","end of function"));
-		
+		funcRetType.clear();
+		funcRetSet=0;
 	}
 	;
 
@@ -951,24 +972,29 @@ logical_or_expression
 
 conditional_expression
 	: logical_or_expression{$$=$1;}
-	| logical_or_expression '?' MIndex expression NList ':' 
+	| logical_or_expression NList '?' MIndex expression NList ':' 
 		MIndex conditional_expression
 	{
 		GENTEMP($$);
-		UPDATE($$,$4->type);
+		UPDATE($$,$5->type);
 
-		quadArray.push_back(Quad($$->name,$8->name));
+		quadArray.push_back(Quad($$->name,$9->name));
 		vi I=makelist(nextInst());
 		quadArray.push_back(Quad(QGOTO,"...",0));
 		
-		backpatch(*$5,nextInst());
-		quadArray.push_back(Quad($$->name,$4->name));
+		backpatch(*$6,nextInst());
+		quadArray.push_back(Quad($$->name,$5->name));
 		I=merge(I,makelist(nextInst()));
 		quadArray.push_back(Quad(QGOTO,"...",0));
 
-
-		backpatch($1->tl,$3);
-		backpatch($1->fl,$7);
+		if(!$1->isBoolExp)
+		{
+			backpatch(*$2,nextInst());
+			int2Bool($1);
+		}
+			
+		backpatch($1->tl,$4);
+		backpatch($1->fl,$8);
 		backpatch(I,nextInst());
 	}	
 	;

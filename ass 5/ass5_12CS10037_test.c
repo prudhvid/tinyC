@@ -1,8 +1,22 @@
+int f1()
+{
+	return 5*5;
+}
+
+int f2(int x,int y)
+{
+	return x+y*x+y;
+}
+
+void f3(double x)
+{
+
+}
 
 int main()
 {
 
-	//int i=0,a[10][10],j;
+	// int i=0,a[10][10],j;
 
 	// for(i=0;i<10;i++)
 	// {
@@ -23,15 +37,16 @@ int main()
 	// int x,*y;
 
 	// y=&x;
-	 int i=9;
-	 i=(i==9)?i*10:i*100;
-	// while(i==9)
+	int i=9;
+	 i=(i)?i*10:i*100;
+	// while(i==9&&j!=0&&i<0&&i>0)
 	// {
 	// 	i++;
 	// }
-	
-	
-	
+	// int i=1;
+	// while(1&&2)
+	// 	i++;
+	return 0;
 }
 
 

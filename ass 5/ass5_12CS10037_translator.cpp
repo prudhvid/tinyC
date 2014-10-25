@@ -1,13 +1,14 @@
 #include "ass5_12CS10037_translator.h"
 
 
-void backpatch(const ListType &v,int index)
+void backpatch(ListType &v,int index)
 {
 	char word[20];
 	sprintf(word, "%d",index);
 	for (int i = 0; i < v.size(); ++i){	
 		quadArray[v[i]].setRes(word);
 	}
+	v.clear();
 }
 
 

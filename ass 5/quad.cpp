@@ -71,7 +71,7 @@ void Quad::emit(const Quad &q){
 				break;
 			case QRELIFLTE:printf("if %s <= %s goto %s\n",q.arg1,q.arg2,q.res );
 				break;
-			
+
 			case QCALL:printf("%s=call %s,%s\n",q.res,q.arg1,q.arg2 );
 				break;
 			default:
@@ -98,6 +98,10 @@ void Quad::emit(const Quad &q){
 			case QPOINTER:printf("%s=*%s\n",q.res,q.arg1 );
 				break;
 			case QADDR:printf("%s=&%s\n",q.res,q.arg1 );
+				break;
+			case QRETURN:printf("return %s\n",q.res);
+				break;
+			case QRETURN_NULL:printf("return\n");
 				break;
 			default:
 			if(q.op<=255)
