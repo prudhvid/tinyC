@@ -161,7 +161,8 @@ declarator
 	: pointer direct_declarator
 	{
 		$$=$2;
-		$$->type.push_back(ii(pointerT,$1.second));
+		for(int i=0;i<$1.second;i++)
+			$$->type.push_back(ii(pointerT,0));
 	}
 	| direct_declarator
 	{
@@ -187,6 +188,9 @@ direct_declarator
 	{
 		funcRetType=$1->type;
 		funcRetType.push_back(ii(funcRetSet,0));
+		Fields* f=_GLOBST->lookup($1->name);
+		UPDATE(f,funcRetType);
+		f->nestedTable=st;
 	}
 	| direct_declarator '(' identifier_list ')'
 	| direct_declarator '(' ')'
@@ -194,6 +198,9 @@ direct_declarator
 		st=new SymbolTable();
 		funcRetType=$1->type;
 		funcRetType.push_back(ii(funcRetSet,0));
+		Fields* f=_GLOBST->lookup($1->name);
+		UPDATE(f,funcRetType);
+		f->nestedTable=st;
 	}
 	;
 
@@ -228,6 +235,7 @@ parameter_list
 		int s=f1.type.size();
 		f->type=f1.type;
 		f->type.push_back(ii($1,0));
+		f->parNum=st->paramNum;
 		UPDATE(f);
 		st->paramNum++;
 	}
@@ -235,6 +243,7 @@ parameter_list
 	{
 		$4->type.push_back(ii($3,0));
 		UPDATE($4);
+		$4->parNum=st->paramNum;
 		st->paramNum++;
 	}
 	;
@@ -339,14 +348,9 @@ expression_statement
 	;
 
 selection_statement
-	: IF '(' boolExpression ')' MIndex statement 
+	: IF '(' boolExpression ')' MIndex statement NList ELSE MIndex statement 
 	{
-		backpatch($3->tl,$5);
-		$$=$6;
-		*$$=merge($3->fl,*$$);
-	}
-	| IF '(' boolExpression ')' MIndex statement NList ELSE MIndex statement 
-	{
+		$$=$10;
 		backpatch($3->tl,$5);
 		backpatch($3->fl,$9);
 		vi temp=merge(*$6,*$7);
@@ -533,8 +537,8 @@ primary_expression
 array_expression
 	:primary_expression '[' expression ']'
 	{
-		if($$->type[0].first!=arrayT)
-			throw "not an arrayT";
+		if($$->type[0].first!=arrayT&&$$->type[0].first!=pointerT)
+			throw "not an arrayT and pointerT";
 		GENTEMP($$);
 		$$->isArray=true;
 		vii temp($1->type.begin()+1,$1->type.end());
@@ -1187,6 +1191,18 @@ Fields* int2char(Fields* f)
 	quadArray.push_back(Quad(res->name,val+string(f->name)+end));
 	return res;
 }
+
+
+/*
+	This is for binary operations. checks the types and converts
+	one of them to other suitable type.
+	int,double ==> double,dpuble
+	int,char 	==> int,int
+	char,double -->double,double
+	and so on
+	It returns the temporary of t=f1 op f2
+	after chnaging f2 or f1 to suitable types
+*/
 Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 {
 	if(f1->type.size()==0||f2->type.size()==0)
@@ -1243,6 +1259,10 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 
 }
 
+
+/*
+	same as above but returns both of them 
+*/
 pair<Fields*,Fields*> changeTypeNReturn(Fields* f1,Fields* f2)
 {
 	if(f1->type.size()>1||f2->type.size()>1)
@@ -1280,6 +1300,9 @@ pair<Fields*,Fields*> changeTypeNReturn(Fields* f1,Fields* f2)
 	return make_pair(arg1,arg2);
 }
 
+/*
+	converts an integer expression to a boolExp with true and false lists
+*/
 void int2Bool(Fields* f)
 {
 	Fields* arg=f;
@@ -1311,6 +1334,12 @@ inline void getValueNBackpatch(Fields* f)
 	//quadArray.push_back(Quad(QGOTO,"...",0));
 }
 
+
+/*
+	This is for assigning types i.e f1=f2;
+	it converts f2 to suitable type and then assigns the value
+	to f1
+*/
 Fields* checkTypesNAssign(Fields* f1,Fields* f2)
 {
 	bool res=typeCheck(f1->type,f2->type);

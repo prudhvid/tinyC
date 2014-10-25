@@ -44,8 +44,14 @@ int typeCheck(Type &t1,Type &t2)
 	int s=t1.size();
 	for (int i = 0; i<s; ++i){
 		ii one=t1[i], two=t2[i];
-		if(one.first!=two.first)
+
+		if(one.first!=two.first){
+			if((one.first==arrayT&&two.first==pointerT)
+				||(one.first==pointerT&&two.first==arrayT)){
+				continue;
+			}
 			return false;
+		}
 		if(one.first==two.first&&one.first<=charT)
 			continue;
 		else 

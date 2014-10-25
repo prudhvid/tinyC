@@ -7,6 +7,7 @@
 	void count();
 	
 	extern SymbolTable* st;
+	int isComment=0;
 %}
 
 
@@ -192,7 +193,7 @@ STRING_LITERAL \"{S_CHAR_SEQUENCE}?\"
 					BEGIN(INITIAL);
 				}
 
-\/\/.* {}
+\/\/.* {isComment=1;}
 
 
 
@@ -214,6 +215,8 @@ void count()
 			column += 8 - (column % 8);
 		else
 			column++;
-
-	ECHO;
+	if(!isComment)
+		ECHO;
+	else
+		isComment=0;
 }

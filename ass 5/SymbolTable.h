@@ -106,11 +106,12 @@ struct Fields{
 		Fields* arrSize; //if type is array, store the size while reducing grammar
 		bool isArray;
 		Fields* arrayBase;
+		int parNum;
 		
 		ListType tl,fl;//true list and false lists
 		Fields():type(),loc(NULL),size(4),offset(0),nestedTable(NULL),
 				isConst(false),isBoolExp(false),arrSize(NULL),
-				isArray(false)
+				isArray(false),parNum(100000)
 				
 				{}
 

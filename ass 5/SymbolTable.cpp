@@ -10,6 +10,12 @@ bool sortCompare(const SFields &s1,const SFields& s2)
 		return true;
 	return false;
 }
+bool parCom(const SFields &s1,const SFields& s2)
+{
+	if(s1.parNum<s2.parNum)
+		return true;
+	return false;
+}
 
 SymbolTable::SymbolTable()
 :n(0),offset(0),paramNum(0)
@@ -64,6 +70,9 @@ void SymbolTable::print()
 	
 	printf("\n--------------------SymbolTable---------------------------\n");
 	printf("no of params=%d\n",paramNum );
+	std::vector<Fields> pars=getParamList();
+	tr(pars,it)
+		printf("%s   ",it->name.c_str() );
 	std::vector<SFields> temp(table.begin(), table.end());
 	sort(temp.begin(), temp.end(),sortCompare);
 	int c=1;
@@ -121,7 +130,7 @@ Fields* SymbolTable::search(const string& s)
 std::vector<Fields> SymbolTable::getParamList()
 {
 	std::vector<SFields> temp(table.begin(), table.end());
-	sort(temp.begin(), temp.end(),sortCompare);
+	sort(temp.begin(), temp.end(),parCom);
 	if(paramNum>0)
 		return std::vector<Fields>(temp.begin(),temp.begin()+paramNum);
 	std::vector<Fields> v;

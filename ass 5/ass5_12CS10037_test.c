@@ -1,21 +1,60 @@
-int f1()
+
+
+
+void mergeI(int *arr,int min,int mid,int max)
 {
-	return 5*5;
+  int tmp[30];
+  int i,j,k,m; 
+  j=min;
+  m=mid+1;
+  for(i=min; j<=mid && m<=max ; i++)
+  {
+     if(arr[j]<=arr[m])
+     {
+         tmp[i]=arr[j];
+         j++;
+     }
+     else
+     {
+         tmp[i]=arr[m];
+         m++;
+     }
+  }
+  if(j>mid)
+  {
+     for(k=m; k<=max; k++)
+     {
+         tmp[i]=arr[k];
+         i++;
+     }
+  }
+  else
+  {
+     for(k=j; k<=mid; k++)
+     {
+        tmp[i]=arr[k];
+        i++;
+     }
+  }
+  for(k=min; k<=max; k++)
+     arr[k]=tmp[k];
 }
 
-int f2(int x,int y)
+void part(int *arr,int min,int max)
 {
-	return x+y*x+y;
+ int mid;
+ if(min<max)
+ {
+   mid=(min+max)/2;
+   part(arr,min,mid);
+   part(arr,mid+1,max);
+   mergeI(arr,min,mid,max);
+ }
+ else
+ 	mid=0;
 }
-
-void f3(double x)
-{
-
-}
-
 int main()
 {
-
 	// int i=0,a[10][10],j;
 
 	// for(i=0;i<10;i++)
@@ -37,15 +76,19 @@ int main()
 	// int x,*y;
 
 	// y=&x;
-	int i=9;
-	 i=(i)?i*10:i*100;
+	// int i=9;
+	//  i=(i)?i*10:i*100;
 	// while(i==9&&j!=0&&i<0&&i>0)
 	// {
 	// 	i++;
 	// }
-	// int i=1;
-	// while(1&&2)
-	// 	i++;
+	int i=1;
+	while(1<2)
+		i++;
+	int x[40];
+	int (*y)=x;
+	y[20]=4;
+	
 	return 0;
 }
 
