@@ -1,4 +1,5 @@
 #include "stdio.h"
+#include "SymbolTable.h"
 #include "ass5_12CS10037_translator.h"
 #include "y.tab.h"
 #include <iostream>
@@ -7,6 +8,7 @@ extern int yyparse();
 extern char* yytext;
 SymbolTable* _GLOBST=new SymbolTable();
 extern int line_number;
+extern SymbolTable* st;
 
 void yyerror(char* s)
 {
@@ -23,10 +25,11 @@ int main()
   catch(const char* p)
   {
     printf("\nERROR: %s on line_number %d\n",p,line_number+1 );
+    st->print();
   }
-  // while(yylex());
-  _GLOBST->print();
 
+  _GLOBST->print();
+  
   for (int i = 0; i <quadArray.size() ; ++i){
     printf("%3d : ",i );
     quad::Quad::emit(quadArray[i]);

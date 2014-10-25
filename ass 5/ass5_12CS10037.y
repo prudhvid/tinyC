@@ -80,7 +80,7 @@
 %type <intval> type_specifier declaration_specifiers unary_operator
 %type <int_pair> pointer
 %type <sentryList> identifier_list  parameter_list argument_expression_list
-%type <intval> '&' '*' '+' '-' '~' '!' MIndex relop
+%type <intval> MIndex relop
 %type <listType> NList statement compound_statement expression_statement 
 			selection_statement iteration_statement block_item block_item_list
 
@@ -433,7 +433,7 @@ function_definition
 		st=_TEMPST;
 		backpatch(*$4,nextInst());
 		quadArray.push_back(Quad("end of function","end of function"));
-		delete $4;
+		
 	}
 	| declaration_specifiers declarator compound_statement
 	{
@@ -447,7 +447,7 @@ function_definition
 		st=_TEMPST;
 		backpatch(*$3,nextInst());
 		quadArray.push_back(Quad("end of function","end of function"));
-		delete $3;
+		
 	}
 	;
 
@@ -662,22 +662,46 @@ unary_expression
 			quadArray.push_back((Quad($$->name,$2->name)));
 		}
 	| unary_operator cast_expression
+	{
+		GENTEMP($$);
+		switch($1)
 		{
-			GENTEMP($$);
-			switch($1)
+			case '+':
+			case '-':
+			case '~':
+				UPDATE($$,$2);
+				quadArray.push_back(Quad($1,$$->name,
+											$2->name));
+				break;
+			case '*':
 			{
-				case '+':
-				case '-':
-				case '~':
-					UPDATE($$,$2);
-					quadArray.push_back(Quad($1,$$->name,
-												$2->name));
-					break;
-				case '*':
-				case '&':
-					;
+				if($2->type[0].first!=pointerT)
+					throw "not a pointer";
+				vii temp($2->type.begin()+1,$2->type.end());
+				$$->type=temp;
+				UPDATE($$);
+				quadArray.push_back(Quad(QPOINTER,$$->name,$2->name));
+				break;
 			}
+			case '&':
+				if($2->type.size()>0&&$2->type[0].first==pointerT){
+					$$->type=$2->type;
+					$$->type[0].second++;
+				}
+				else {
+					$$->type.push_back(ii(pointerT,1));
+					$$->type.insert($$->type.end(),$2->type.begin(),
+									$2->type.end());
+				}
+					
+				UPDATE($$);
+				quadArray.push_back(Quad(QADDR,$$->name,$2->name));
+				break;
+			default:
+				printf("default %c %d\n",$1,$1);
+				throw "error in processing unary operators";
 		}
+	}
 	| '!' changeBoolTemp
 	{
 		GENTEMP($$);
@@ -692,11 +716,11 @@ unary_expression
 	;
 
 unary_operator
-	: '&'  {$$=(int)$1;}
-	| '*'  {$$=(int)$1;}	
-	| '+'  {$$=(int)$1;}
-	| '-'  {$$=(int)$1;}
-	| '~'  {$$=(int)$1;}
+	: '&'  {$$=yytext[0];}
+	| '*'  {$$=yytext[0];}	
+	| '+'  {$$=yytext[0];}
+	| '-'  {$$=yytext[0];}
+	| '~'  {$$=yytext[0];}
 	;
 
 cast_expression
@@ -1120,11 +1144,13 @@ Fields* int2char(Fields* f)
 }
 Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 {
-	
+	if(f1->type.size()==0||f2->type.size()==0)
+		throw "non initialized types";
 	if(f1->type.size()>1||f2->type.size()>1)
 		throw "invalid type Changing";
 	int check=typeCheck(f1->type,f2->type);
-
+	printf("\n");
+	f1->print();f2->print();
 	Fields* arg1=f1,*arg2=f2,*res;
 	GENTEMP(res);
 

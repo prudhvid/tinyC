@@ -26,7 +26,9 @@ enum{
 	QGE_OP, //>=
 	QLE_OP, //<=
 	QPARAM, //function params
-	QCALL //function call
+	QCALL, //function call
+	QPOINTER,
+	QADDR
 };
 
 /*

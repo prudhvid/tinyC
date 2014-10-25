@@ -137,7 +137,9 @@ struct Fields{
 		void print()
 		{	
 			printf("%s\t%d\t%d\t",name.c_str(),size,offset);
+			printf("type=");
 			tr(type, it){
+
 				printf("(%s %d)   ",nameSizeArray[it->first].c_str(),it->second );
 			}
 			printf("\n");

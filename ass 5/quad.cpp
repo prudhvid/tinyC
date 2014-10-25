@@ -95,6 +95,10 @@ void Quad::emit(const Quad &q){
 				break;
 			case QPARAM:printf("param %s\n",q.res );
 				break;
+			case QPOINTER:printf("%s=*%s\n",q.res,q.arg1 );
+				break;
+			case QADDR:printf("%s=&%s\n",q.res,q.arg1 );
+				break;
 			default:
 			if(q.op<=255)
 				printf("%s = %c %s\n",q.res,q.op,q.arg1 );
