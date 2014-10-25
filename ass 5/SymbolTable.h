@@ -103,10 +103,15 @@ struct Fields{
 		}val;
 		bool isConst; //if the symbol present is actually a constant
 		bool isBoolExp; //if it is a boolean expression then t has true list and false lists
+		Fields* arrSize; //if type is array, store the size while reducing grammar
+		bool isArray;
+		Fields* arrayBase;
 		
 		ListType tl,fl;//true list and false lists
 		Fields():type(),loc(NULL),size(4),offset(0),nestedTable(NULL),
-				isConst(false),isBoolExp(false)
+				isConst(false),isBoolExp(false),arrSize(NULL),
+				isArray(false)
+				
 				{}
 
 		//all posible updates available to change the values in ST using pointers

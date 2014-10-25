@@ -76,7 +76,7 @@
 %type <sentry> relational_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression
 %type <sentry> expression  initializer init_declarator direct_declarator declarator logical_or_expression
 	logical_and_expression conditional_expression assignment_expression constant_expression changeBoolTemp logicalTempRule boolExpression
-	boolExpressionStatement function_definition
+	boolExpressionStatement function_definition array_expression
 %type <intval> type_specifier declaration_specifiers unary_operator
 %type <int_pair> pointer
 %type <sentryList> identifier_list  parameter_list argument_expression_list
@@ -321,7 +321,14 @@ block_item
 
 expression_statement
 	: ';' {$$=new vi();}
-	| expression ';' {$$=new vi();}
+	| expression ';' 
+	{
+		if($1->isBoolExp){
+			$$=&($1->fl);
+		}
+		else
+			$$=new vi();
+	}
 	;
 
 selection_statement
@@ -502,27 +509,69 @@ primary_expression
 	;
 
 
-
-postfix_expression
-	: primary_expression {$$=$1;}
-	| postfix_expression '[' expression ']'
+array_expression
+	:primary_expression '[' expression ']'
 	{
 		if($$->type[0].first!=arrayT)
 			throw "not an arrayT";
 		GENTEMP($$);
+		$$->isArray=true;
 		vii temp($1->type.begin()+1,$1->type.end());
 		int s=getSize(temp);
-		char word[50];sprintf(word,"%d",s);
-		Fields *f1;
-		GENTEMP(f1);
-		f1->type.push_back(ii(intT,0));
-		UPDATE(f1);
-		quadArray.push_back(Quad('*',f1->name,$3->name,word));
 		$$->type=temp;
 		UPDATE($$);
 
-		quadArray.push_back(Quad(QARRVAL,$$->name,
-						$1->name,f1->name));
+		char word[50];
+		sprintf(word,"%d",s);
+		Fields *&f1=$$->arrSize;
+		GENTEMP(f1);
+		f1->type.push_back(ii(intT,0));
+		UPDATE(f1);
+
+		quadArray.push_back(Quad('*',f1->name,$3->name,word));
+		$$->arrayBase=$1;
+	}
+	| array_expression '[' expression ']'
+	{
+		if($$->type[0].first!=arrayT)
+			throw "not an arrayT";
+		GENTEMP($$);
+		$$->isArray=true;
+		vii temp($1->type.begin()+1,$1->type.end());
+		int s=getSize(temp);
+		$$->type=temp;
+		UPDATE($$);
+
+		char word[50];sprintf(word,"%d",s);
+		Fields *f1;
+		GENTEMP(f1);
+		GENTEMP($$->arrSize);
+		$$->arrSize->type=$1->arrSize->type;
+		UPDATE($$->arrSize);
+
+		f1->type.push_back(ii(intT,0));
+		UPDATE(f1);
+
+		quadArray.push_back(Quad('*',f1->name,$3->name,word));
+		$$->arrayBase=$1->arrayBase;
+
+		quadArray.push_back(Quad('+',$$->arrSize->name,
+					$1->arrSize->name,f1->name));
+	}	
+	;
+
+postfix_expression
+	: primary_expression {$$=$1;}
+	|array_expression
+	{
+		GENTEMP($$);
+		$$->type=$1->type;
+		$$->isArray=true;
+		$$->arrayBase=$1->arrayBase;
+		$$->arrSize=$1->arrSize;
+		UPDATE($$);
+		quadArray.push_back(Quad(QARRVAL,$$->name,$1->arrayBase->name,
+								$1->arrSize->name));
 	}
 	| postfix_expression '(' ')' 
 	{
@@ -893,7 +942,13 @@ assignment_expression
 		//quadArray.push_back(Quad($1->name,$3->name));
 
 		Fields* f=checkTypesNAssign($1,$3);
-		quadArray.push_back(Quad($1->name,f->name));
+		if($1->isArray)
+		{
+			quadArray.push_back(Quad(QARRDEREF,$1->arrayBase->name,
+								$1->arrSize->name,f->name));
+		}
+		else 
+			quadArray.push_back(Quad($1->name,f->name));
 		$$=$1;
 	}
 	;
