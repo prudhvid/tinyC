@@ -320,11 +320,11 @@ block_item
 
 
 expression_statement
-	: ';' {$$=new vi();}
+	: ';' {$$=new vi();}	
 	| expression ';' 
 	{
-		if($1->isBoolExp){
-			$$=&($1->fl);
+		if($1->isBoolExp){ 
+			*$$=merge($1->fl,$1->tl);
 		}
 		else
 			$$=new vi();
@@ -896,7 +896,7 @@ inclusive_or_expression
 
 logical_and_expression
 	: inclusive_or_expression{$$=$1;}
-	| logicalTempRule
+	| logicalTempRule{$$=$1;}
 	;
 
 logicalTempRule
@@ -927,6 +927,7 @@ changeBoolTemp
 		if($1->isBoolExp==false)
 			int2Bool($1);
 		$$=$1;
+		$$->isBoolExp=true;
 	}
 	;
 
@@ -973,6 +974,27 @@ assignment_expression
 		}
 		else 
 			quadArray.push_back(Quad($1->name,f->name));
+
+		if($3->isBoolExp){
+			printf("assignBool");
+			$1->isBoolExp=true;
+			$1->tl=$3->tl;
+			$1->fl=$3->fl;
+		}
+			
+		if($3->isConst){
+			printf("assignCOnst");
+			$1->isConst=true;
+			$1->val=$3->val;
+		}
+			
+		if($3->isArray){
+			printf("assignArray");
+			$1->isArray=true;
+			$1->arrSize=$3->arrSize;
+			$1->arrayBase=$3->arrayBase;
+		}
+			
 		$$=$1;
 	}
 	;
@@ -1149,8 +1171,8 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 	if(f1->type.size()>1||f2->type.size()>1)
 		throw "invalid type Changing";
 	int check=typeCheck(f1->type,f2->type);
-	printf("\n");
-	f1->print();f2->print();
+	
+	
 	Fields* arg1=f1,*arg2=f2,*res;
 	GENTEMP(res);
 
@@ -1255,15 +1277,15 @@ void int2Bool(Fields* f)
 
 inline void getValueNBackpatch(Fields* f)
 {
-	//backpatch(f->tl,nextInst());
-	//quadArray.push_back(Quad(f->name,"1"));
-	//f->tl=makelist(nextInst());
-	//quadArray.push_back(Quad(QGOTO,"...",0));
+	backpatch(f->tl,nextInst());
+	quadArray.push_back(Quad(f->name,"1"));
+	f->tl=makelist(nextInst());
+	quadArray.push_back(Quad(QGOTO,"...",0));
 
-	//backpatch(f->fl,nextInst());
-	//quadArray.push_back(Quad(f->name,"0"));
-	//f->fl=makelist(nextInst());
-	//quadArray.push_back(Quad(QGOTO,"...",0));
+	backpatch(f->fl,nextInst());
+	quadArray.push_back(Quad(f->name,"0"));
+	f->fl=makelist(nextInst());
+	quadArray.push_back(Quad(QGOTO,"...",0));
 }
 
 Fields* checkTypesNAssign(Fields* f1,Fields* f2)

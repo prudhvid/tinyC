@@ -67,8 +67,9 @@ void SymbolTable::print()
 	std::vector<SFields> temp(table.begin(), table.end());
 	sort(temp.begin(), temp.end(),sortCompare);
 	int c=1;
+	printf("S.no\tName\tsize\toffset\tISbool\ttype\n");
 	tr(temp,it)	{
-		printf("%d\t%s\t%d\t%d\t",c, it->name.c_str(),it->size,it->offset);
+		printf("%d\t%s\t%d\t%d\t%d\t",c, it->name.c_str(),it->size,it->offset,it->isBoolExp);
 		For(i, 0, it->type.size()){
 			printf("(%s %d)  ",nameSizeArray[it->type[i].first].c_str(),
 								 it->type[i].second );
