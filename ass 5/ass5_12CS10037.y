@@ -918,7 +918,7 @@ logicalTempRule
 		$$->tl=$4->tl;
 		getValueNBackpatch($$);
 	}
-	| changeBoolTemp
+	| changeBoolTemp{$$=$1;}
 	;
 
 changeBoolTemp
@@ -952,7 +952,26 @@ logical_or_expression
 
 conditional_expression
 	: logical_or_expression{$$=$1;}
-	| logical_or_expression '?' expression ':' conditional_expression
+	| logical_or_expression '?' MIndex expression NList ':' 
+		MIndex conditional_expression
+	{
+		GENTEMP($$);
+		UPDATE($$,$4->type);
+
+		quadArray.push_back(Quad($$->name,$8->name));
+		vi I=makelist(nextInst());
+		quadArray.push_back(Quad(QGOTO,"...",0));
+		
+		backpatch(*$5,nextInst());
+		quadArray.push_back(Quad($$->name,$4->name));
+		I=merge(I,makelist(nextInst()));
+		quadArray.push_back(Quad(QGOTO,"...",0));
+
+
+		backpatch($1->tl,$3);
+		backpatch($1->fl,$7);
+		backpatch(I,nextInst());
+	}	
 	;
 
 assignment_expression
