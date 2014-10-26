@@ -945,7 +945,20 @@ inclusive_or_expression
 
 logical_and_expression
 	: inclusive_or_expression{$$=$1;}
-	| logical_and_expression_bool
+	| logical_and_expression NList AND_OP MIndex inclusive_or_expression 
+	{
+		if(!$5->isBoolExp)
+			int2Bool($5);
+
+		if(!$1->isBoolExp){
+			backpatch(*$2,nextInst());
+			int2Bool($1);
+		}
+		backpatch($1->tl,$4);
+		$$->isBoolExp=true;
+		$$->tl=$5->tl;
+		$$->fl=merge($1->fl,$5->fl);
+	}
 	;
 
 logical_and_expression_bool
@@ -981,20 +994,19 @@ changeBoolTemp
 
 logical_or_expression
 	: logical_and_expression{$$=$1;}
-	| logical_or_expression OR_OP MIndex logical_and_expression
+	| logical_or_expression NList OR_OP MIndex logical_and_expression
 	{
+		if(!$5->isBoolExp)
+			int2Bool($5);
 
-		GENTEMP($$);
-		$$->type.push_back(ii(intT,0));
-		UPDATE($$);
+		if(!$1->isBoolExp){
+			backpatch(*$2,nextInst());
+			int2Bool($1);
+		}
+		backpatch($1->fl,$4);
 		$$->isBoolExp=true;
-
-		backpatch($1->fl,$3);
-		$$->tl=merge($1->tl,$4->tl);
-		$$->fl=$4->fl;
-
-
-		getValueNBackpatch($$);
+		$$->tl=merge($1->tl,$5->tl);
+		$$->fl=$5->fl;
 	}
 	;
 
