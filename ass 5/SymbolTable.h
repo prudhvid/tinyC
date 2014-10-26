@@ -105,13 +105,14 @@ struct Fields{
 		bool isBoolExp; //if it is a boolean expression then t has true list and false lists
 		Fields* arrSize; //if type is array, store the size while reducing grammar
 		bool isArray;
+		bool isPointer;
 		Fields* arrayBase;
 		int parNum;
 		
 		ListType tl,fl;//true list and false lists
 		Fields():type(),loc(NULL),size(4),offset(0),nestedTable(NULL),
 				isConst(false),isBoolExp(false),arrSize(NULL),
-				isArray(false),parNum(100000)
+				isArray(false),isPointer(false),parNum(100000)
 				
 				{}
 

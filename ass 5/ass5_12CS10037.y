@@ -724,11 +724,13 @@ unary_expression
 				break;
 			case '*':
 			{
-				if($2->type[0].first!=pointerT)
+				if($2->type[0].first!=pointerT&&$2->type[0].first!=arrayT)
 					throw "not a pointer";
 				vii temp($2->type.begin()+1,$2->type.end());
 				$$->type=temp;
 				UPDATE($$);
+				$$->isPointer=true;
+				$$->arrayBase=$2;
 				quadArray.push_back(Quad(QPOINTER,$$->name,$2->name));
 				break;
 			}
@@ -1056,7 +1058,11 @@ assignment_expression
 			quadArray.push_back(Quad(QARRDEREF,$1->arrayBase->name,
 								$1->arrSize->name,f->name));
 		}
-
+		else if($1->isPointer)
+		{
+			quadArray.push_back(Quad(QPOINTERDER,$1->arrayBase->name,
+								f->name));
+		}
 		else 
 			quadArray.push_back(Quad($1->name,f->name));
 		$$=$1;

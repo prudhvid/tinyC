@@ -97,12 +97,15 @@ void Quad::emit(const Quad &q){
 				break;
 			case QPOINTER:printf("%s=*%s\n",q.res,q.arg1 );
 				break;
+			case QPOINTERDER:printf("*%s=%s\n",q.res,q.arg1);
+				break;
 			case QADDR:printf("%s=&%s\n",q.res,q.arg1 );
 				break;
 			case QRETURN:printf("return %s\n",q.res);
 				break;
 			case QRETURN_NULL:printf("return\n");
 				break;
+
 			default:
 			if(q.op<=255)
 				printf("%s = %c %s\n",q.res,q.op,q.arg1 );
