@@ -22,7 +22,7 @@ SymbolTable::SymbolTable()
 {
 	nameindex.clear();
 	table.clear();
-	table.reserve(100);
+	table.reserve(100000);
 }
 
 Fields* SymbolTable::gentemp(SymbolTable &st)
@@ -88,7 +88,12 @@ void SymbolTable::print()
 	}	
 	printf("-----------------------------------------------------------\n");
 
-	
+	// tr(table, it)
+	// {
+	// 	printf("%u %s\n",&(*it),it->name.c_str() );
+	// }
+
+	// printf("-----------------------------------------------------------\n");	
 }
 
 void SymbolTable::update(Fields* f,const Type& t)

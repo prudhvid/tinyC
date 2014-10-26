@@ -50,8 +50,6 @@ void part(int *arr,int min,int max)
    part(arr,mid+1,max);
    mergeI(arr,min,mid,max);
  }
- else
- 	mid=0;
 }
 int main()
 {
@@ -82,8 +80,8 @@ int main()
 	// {
 	// 	i++;
 	// }
-	int i=1;
-	while(1<2)
+	int i=1,j=0;
+	for(;i||j;)
 		i++;
 	int x[40];
 	int (*y)=x;

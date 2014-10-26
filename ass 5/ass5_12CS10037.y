@@ -53,8 +53,9 @@
 	ListType* listType;
 	vector<Fields*>* sentryList;
 }
-
-
+%nonassoc LEAST_PREC
+%nonassoc "then"
+%nonassoc "else"
 %token IDENTIFIER STRING_LITERAL SIZEOF INTEGER_CONSTANT FLOATING_CONSTANT CHARACTER_CONSTANT
 %token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
 %token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
@@ -69,8 +70,11 @@
 
 %start translation_unit
 
-
-
+%left '*' '+' '-' '%'
+%left '&' '^' '!' '~'
+%left AND_OP OR_OP EQ_OP NE_OP
+%nonassoc INC_OP DEC_OP 
+%nonassoc UPLUS UMINUS USTAR UAND
 
 
 
@@ -78,7 +82,7 @@
 %type <sentry> primary_expression postfix_expression unary_expression cast_expression multiplicative_expression additive_expression shift_expression
 %type <sentry> relational_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression
 %type <sentry> expression  initializer init_declarator direct_declarator declarator logical_or_expression
-	logical_and_expression conditional_expression assignment_expression constant_expression changeBoolTemp logicalTempRule boolExpression
+	logical_and_expression conditional_expression assignment_expression constant_expression changeBoolTemp logical_and_expression_bool boolExpression
 	boolExpressionStatement function_definition array_expression
 %type <intval> type_specifier declaration_specifiers unary_operator
 %type <int_pair> pointer
@@ -87,7 +91,7 @@
 %type <listType> NList statement compound_statement expression_statement 
 			selection_statement iteration_statement block_item block_item_list
 			
-
+%nonassoc HIGH_PREC
 
 %%
 
@@ -291,7 +295,19 @@ initializer
 
 
 
+NList
+	: %prec HIGH_PREC
+	{	
+		$$=new vi();
+		$$->push_back(nextInst());
+		quadArray.push_back(Quad(QGOTO,"...",0));
+	 }
+	;
 
+
+MIndex
+	:{$$=nextInst();}
+	;
 
 
 
@@ -348,7 +364,13 @@ expression_statement
 	;
 
 selection_statement
-	: IF '(' boolExpression ')' MIndex statement NList ELSE MIndex statement 
+	:IF '(' boolExpression ')' MIndex statement  %prec "then"
+	{
+		backpatch($3->tl,$5);
+		$$=$6;
+   	 	*$$=merge($3->fl,*$$);
+   	}
+	| IF '(' boolExpression ')' MIndex statement NList ELSE MIndex statement 
 	{
 		$$=$10;
 		backpatch($3->tl,$5);
@@ -385,7 +407,15 @@ iteration_statement
 		backpatch(*$8,$4);
 		*$$=$5->fl;
 	}
-	
+	| FOR '(' expression_statement MIndex boolExpressionStatement ')'
+			 MIndex statement
+	{
+		quadArray.push_back(Quad(QGOTO,$4));
+		backpatch($5->tl,$7);
+		$$=new vi();
+		*$$=$5->fl;
+	}
+
 	;
 
 jump_statement
@@ -405,13 +435,7 @@ jump_statement
 	;
 
 
-NList
-	:{	
-		$$=new vi();
-		$$->push_back(nextInst());
-		quadArray.push_back(Quad(QGOTO,"...",0));
-	 }
-	;
+
 boolExpressionStatement
 	: ';' 
 	{
@@ -741,10 +765,10 @@ unary_expression
 	;
 
 unary_operator
-	: '&'  {$$=yytext[0];}
-	| '*'  {$$=yytext[0];}	
-	| '+'  {$$=yytext[0];}
-	| '-'  {$$=yytext[0];}
+	: '&' %prec UAND {$$=yytext[0];}
+	| '*' %prec USTAR  {$$=yytext[0];}	
+	| '+' %prec UPLUS {$$=yytext[0];}
+	| '-' %prec UMINUS {$$=yytext[0];}
 	| '~'  {$$=yytext[0];}
 	;
 
@@ -754,7 +778,7 @@ cast_expression
 	;
 
 multiplicative_expression
-	: cast_expression 
+	: cast_expression %prec LEAST_PREC
 	{
 		$$=$1;
 	}
@@ -921,11 +945,11 @@ inclusive_or_expression
 
 logical_and_expression
 	: inclusive_or_expression{$$=$1;}
-	| logicalTempRule
+	| logical_and_expression_bool
 	;
 
-logicalTempRule
-	: logicalTempRule AND_OP MIndex changeBoolTemp
+logical_and_expression_bool
+	: logical_and_expression_bool AND_OP MIndex changeBoolTemp
 	{
 		GENTEMP($$);
 		$$->type.push_back(ii(intT,0));
@@ -1020,6 +1044,7 @@ assignment_expression
 			quadArray.push_back(Quad(QARRDEREF,$1->arrayBase->name,
 								$1->arrSize->name,f->name));
 		}
+
 		else 
 			quadArray.push_back(Quad($1->name,f->name));
 		$$=$1;
@@ -1037,11 +1062,6 @@ expression
 
 constant_expression
 	: conditional_expression{$$=$1;}
-	;
-
-
-MIndex
-	:{$$=nextInst();}
 	;
 
 
