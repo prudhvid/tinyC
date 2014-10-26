@@ -53,9 +53,7 @@
 	ListType* listType;
 	vector<Fields*>* sentryList;
 }
-%nonassoc LEAST_PREC
-%nonassoc "then"
-%nonassoc "else"
+
 %token IDENTIFIER STRING_LITERAL SIZEOF INTEGER_CONSTANT FLOATING_CONSTANT CHARACTER_CONSTANT
 %token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
 %token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
@@ -70,11 +68,7 @@
 
 %start translation_unit
 
-%left '*' '+' '-' '%'
-%left '&' '^' '!' '~'
-%left AND_OP OR_OP EQ_OP NE_OP
-%nonassoc INC_OP DEC_OP 
-%nonassoc UPLUS UMINUS USTAR UAND
+
 
 
 
@@ -133,7 +127,17 @@ init_declarator
 		$$->type.push_back(ii(_GLOBALTYPE,0));
 		UPDATE($$);
 		Fields* f=checkTypesNAssign($$,$3);
-		quadArray.push_back(Quad($$->name,f->name));
+
+		if($3->isBoolExp){
+			backpatch($3->tl,nextInst());
+			quadArray.push_back(Quad($1->name,"1"));
+			quadArray.push_back(Quad(QGOTO,nextInst()+2));
+			backpatch($3->fl,nextInst());
+			quadArray.push_back(Quad($1->name,"0"));
+		}
+		else 
+			quadArray.push_back(Quad($1->name,f->name));
+		$$=$1;
 	}
 	;
 
@@ -1063,6 +1067,13 @@ assignment_expression
 			quadArray.push_back(Quad(QPOINTERDER,$1->arrayBase->name,
 								f->name));
 		}
+		else if($3->isBoolExp){
+			backpatch($3->tl,nextInst());
+			quadArray.push_back(Quad($1->name,"1"));
+			quadArray.push_back(Quad(QGOTO,nextInst()+2));
+			backpatch($3->fl,nextInst());
+			quadArray.push_back(Quad($1->name,"0"));
+		}
 		else 
 			quadArray.push_back(Quad($1->name,f->name));
 		$$=$1;
@@ -1389,6 +1400,7 @@ Fields* checkTypesNAssign(Fields* f1,Fields* f2)
 		int t1=f1->type[0].first,t2=f2->type[0].first;
 
 		Fields *temp;
+
 		if(t1==intT&&t2==doubleT)
 			temp=double2int(f2);
 		else if(t1==intT&&t2==charT)
