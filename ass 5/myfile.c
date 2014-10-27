@@ -16,7 +16,7 @@ void yyerror(char* s)
 }
 int main()
 {
-  freopen("test2.c", "r", stdin);
+  freopen("decl_test.c", "r", stdin);
   int token;
   std::string s;
   try{

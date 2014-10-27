@@ -14,7 +14,7 @@
 	
 	extern char* yytext;
 	using namespace quad;
-	//int offset=0;
+
 	inline void GENTEMP(Fields* &f){ f=SymbolTable::gentemp(*st);}
 	inline void UPDATE(Fields* f){
 		st->update(f,f->type);
@@ -586,8 +586,8 @@ array_expression
 	}
 	| array_expression '[' expression ']'
 	{
-		if($$->type[0].first!=arrayT)
-			throw "not an arrayT";
+		if($$->type[0].first!=arrayT&&$$->type[0].first!=pointerT)
+			throw "not an arrayT and pointerT";
 		GENTEMP($$);
 		$$->isArray=true;
 		vii temp($1->type.begin()+1,$1->type.end());
@@ -741,10 +741,10 @@ unary_expression
 			case '&':
 				if($2->type.size()>0&&$2->type[0].first==pointerT){
 					$$->type=$2->type;
-					$$->type[0].second++;
+					$$->type.push_back(ii(pointerT,0));
 				}
 				else {
-					$$->type.push_back(ii(pointerT,1));
+					$$->type.push_back(ii(pointerT,0));
 					$$->type.insert($$->type.end(),$2->type.begin(),
 									$2->type.end());
 				}
@@ -1057,6 +1057,7 @@ assignment_expression
 		//quadArray.push_back(Quad($1->name,$3->name));
 
 		Fields* f=checkTypesNAssign($1,$3);
+
 		if($1->isArray)
 		{
 			quadArray.push_back(Quad(QARRDEREF,$1->arrayBase->name,
@@ -1149,7 +1150,8 @@ CONSTANT
 		UPDATE($$);
 		char *temp=strdup(yytext);
 		temp++;
-		temp[strlen(temp)-1]='\0';
+		//temp[strlen(temp)-1]='\0';
+		sprintf(temp,"%d",temp[0]);
 		quadArray.push_back(Quad($$->name,temp));
 	
 	}
