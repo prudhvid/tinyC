@@ -14,7 +14,7 @@ lex.yy.c: y.tab.h ass5_12CS10037.l ass5_12CS10037_translator.o
 	flex ass5_12CS10037.l
 
 y.tab.c: ass5_12CS10037.y
-	yacc -dtv ass5_12CS10037.y
+	yacc -dt --warnings=none ass5_12CS10037.y
 
 
 

@@ -7,15 +7,37 @@
 	struct Fields;
 	extern int yylex();
 	extern void yyerror(char *s);
+	/*	
+		All the quads will be stored and pushed to this vector.
+		All of them will be printed at once in the end
+	*/
 	std::vector<quad::Quad> quadArray;
+	/*
+		It is the temporary symbol table to which names go into when scope is unknown
+	*/
 	SymbolTable* _TEMPST=new SymbolTable();
+	/*	
+		st points to the current symbol table we're adding to
+	*/
 	SymbolTable* st=_TEMPST;
+	/*	
+	pointer to the global symbol table that has all the function names
+	*/
 	extern SymbolTable* _GLOBST;
 	
 	extern char* yytext;
 	using namespace quad;
-
+	/*
+		generates a tempory variable in symboltable
+	*/
 	inline void GENTEMP(Fields* &f){ f=SymbolTable::gentemp(*st);}
+
+	/*
+		Update functions has all overloads 
+		update does the following
+			with the type specified, get the size of the symbol and initailize its offset
+	*/
+
 	inline void UPDATE(Fields* f){
 		st->update(f,f->type);
 	} 
@@ -25,21 +47,51 @@
 	inline void UPDATE(Fields* f1,Fields* f2){
 		st->update(f1,f2);
 	} 
+
+	/*	
+		It provides the index of next emmited quad
+	*/
 	inline int nextInst(){
 		return quadArray.size();
 	}
+	/*	
+	Emit the last added quad
+	*/
 	inline void EMIT(){
 		Quad::emit(quadArray[(int)quadArray.size()-1]);
 	}
+	/*
+	explained at definition
+	*/
 	Fields* checkTypesNAssign(Fields* f1,Fields* f2);
-	
+	/*
+	explained at definition
+	*/
 	inline void getValueNBackpatch(Fields* f);
+	/*
+		It stores the type so that all idenitifiers declared using , operator
+		will be assigned with this type at the end
+	*/
 	int _GLOBALTYPE;
+	/*
+	explained at definition
+	*/
 	Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op);
+	/*
+	explained at definition
+	*/
 	pair<Fields*,Fields*> changeTypeNReturn(Fields* f1,Fields* f2);
+	/*
+	explained at definition
+	*/
 	void int2Bool(Fields* f);
-
+	/*
+		If function return value is found then it is set to 1
+	*/
 	int funcRetSet=0;
+	/*
+		stores the return type of current function
+	*/
 	Type funcRetType;
 %}
 
@@ -71,17 +123,27 @@
 
 
 
-
+/*
+	sentry--> pointer to a field in ST
+*/
 %type <sentry> id_parser CONSTANT STRING_LITERAL 
 %type <sentry> primary_expression postfix_expression unary_expression cast_expression multiplicative_expression additive_expression shift_expression
 %type <sentry> relational_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression
 %type <sentry> expression  initializer init_declarator direct_declarator declarator logical_or_expression
-	logical_and_expression conditional_expression assignment_expression constant_expression changeBoolTemp logical_and_expression_bool boolExpression
+	logical_and_expression conditional_expression assignment_expression constant_expression changeBoolTemp  boolExpression
 	boolExpressionStatement function_definition array_expression
+
 %type <intval> type_specifier declaration_specifiers unary_operator
 %type <int_pair> pointer
+/*
+	sentryList-->list of pointers to  fields in ST
+*/
 %type <sentryList> identifier_list  parameter_list argument_expression_list
 %type <intval> MIndex relop
+
+/*
+	This is the type to store indices of dangling gotos in quads
+*/
 %type <listType> NList statement compound_statement expression_statement 
 			selection_statement iteration_statement block_item block_item_list
 			
@@ -297,8 +359,10 @@ initializer
 
 
 
-
-
+/*
+	this is to emit a goto while reducing and maintiain the index of
+	that quad in the list it has as attribute
+*/
 NList
 	: %prec HIGH_PREC
 	{	
@@ -308,7 +372,10 @@ NList
 	 }
 	;
 
-
+/*
+Index of the quad generated at MIndex will be stored when reducing this.
+this is used for backpatching
+*/
 MIndex
 	:{$$=nextInst();}
 	;
@@ -320,11 +387,11 @@ MIndex
 statement
 	: compound_statement {$$=$1;}
 	| expression_statement{$$=$1;}
-	| selection_statement {$$=$1;printf("selection_statement");}
+	| selection_statement {$$=$1;}
 	| iteration_statement 
 	{
 		$$=$1;
-		printf("iteration_statement");
+		
 	}
 	| jump_statement {$$=new vi();}
 	;
@@ -414,6 +481,7 @@ iteration_statement
 	| FOR '(' expression_statement MIndex boolExpressionStatement ')'
 			 MIndex statement
 	{
+		backpatch(*$8,$4);
 		quadArray.push_back(Quad(QGOTO,$4));
 		backpatch($5->tl,$7);
 		$$=new vi();
@@ -467,7 +535,7 @@ translation_unit
 	;
 
 external_declaration
-	: function_definition {printf("  function_definition  ");}
+	: function_definition {}
 	;
 
 function_definition
@@ -478,11 +546,13 @@ function_definition
 		$$->type.push_back(ii($1,0));
 		_GLOBST->update($$,$$->type);
 		$$->nestedTable=st;
+		printf("\n\n\tSymbolTable of function %s",$2->name.c_str());
 		st->print();
 		_TEMPST->clearTable();
 		st=_TEMPST;
 		backpatch(*$4,nextInst());
-		quadArray.push_back(Quad("end of function","end of function"));
+		//adds a default return at the end of every function
+		quadArray.push_back(Quad(QRETURN_NULL,0));
 		funcRetType.clear();
 		funcRetSet=0;
 		
@@ -494,11 +564,13 @@ function_definition
 		$$->type.push_back(ii($1,0));
 		_GLOBST->update($$,$$->type);
 		$$->nestedTable=st;
+		printf("\n\n\tSymbolTable of function %s",$2->name.c_str());
 		st->print();
 		_TEMPST->clearTable();
 		st=_TEMPST;
 		backpatch(*$3,nextInst());
-		quadArray.push_back(Quad("end of function","end of function"));
+		//adds a default return at the end of every function
+		quadArray.push_back(Quad(QRETURN_NULL,0)); 
 		funcRetType.clear();
 		funcRetSet=0;
 	}
@@ -562,56 +634,56 @@ primary_expression
 	;
 
 
-array_expression
-	:primary_expression '[' expression ']'
-	{
-		if($$->type[0].first!=arrayT&&$$->type[0].first!=pointerT)
-			throw "not an arrayT and pointerT";
-		GENTEMP($$);
-		$$->isArray=true;
-		vii temp($1->type.begin()+1,$1->type.end());
-		int s=getSize(temp);
-		$$->type=temp;
-		UPDATE($$);
+	array_expression
+		:primary_expression '[' expression ']'
+		{
+			if($$->type[0].first!=arrayT&&$$->type[0].first!=pointerT)
+				throw "not an arrayT and pointerT";
+			GENTEMP($$);
+			$$->isArray=true;
+			vii temp($1->type.begin()+1,$1->type.end());
+			int s=getSize(temp);
+			$$->type=temp;
+			UPDATE($$);
 
-		char word[50];
-		sprintf(word,"%d",s);
-		Fields *&f1=$$->arrSize;
-		GENTEMP(f1);
-		f1->type.push_back(ii(intT,0));
-		UPDATE(f1);
+			char word[50];
+			sprintf(word,"%d",s);
+			Fields *&f1=$$->arrSize;
+			GENTEMP(f1);
+			f1->type.push_back(ii(intT,0));
+			UPDATE(f1);
 
-		quadArray.push_back(Quad('*',f1->name,$3->name,word));
-		$$->arrayBase=$1;
-	}
-	| array_expression '[' expression ']'
-	{
-		if($$->type[0].first!=arrayT&&$$->type[0].first!=pointerT)
-			throw "not an arrayT and pointerT";
-		GENTEMP($$);
-		$$->isArray=true;
-		vii temp($1->type.begin()+1,$1->type.end());
-		int s=getSize(temp);
-		$$->type=temp;
-		UPDATE($$);
+			quadArray.push_back(Quad('*',f1->name,$3->name,word));
+			$$->arrayBase=$1;
+		}
+		| array_expression '[' expression ']'
+		{
+			if($$->type[0].first!=arrayT&&$$->type[0].first!=pointerT)
+				throw "not an arrayT and pointerT";
+			GENTEMP($$);
+			$$->isArray=true;
+			vii temp($1->type.begin()+1,$1->type.end());
+			int s=getSize(temp);
+			$$->type=temp;
+			UPDATE($$);
 
-		char word[50];sprintf(word,"%d",s);
-		Fields *f1;
-		GENTEMP(f1);
-		GENTEMP($$->arrSize);
-		$$->arrSize->type=$1->arrSize->type;
-		UPDATE($$->arrSize);
+			char word[50];sprintf(word,"%d",s);
+			Fields *f1;
+			GENTEMP(f1);
+			GENTEMP($$->arrSize);
+			$$->arrSize->type=$1->arrSize->type;
+			UPDATE($$->arrSize);
 
-		f1->type.push_back(ii(intT,0));
-		UPDATE(f1);
+			f1->type.push_back(ii(intT,0));
+			UPDATE(f1);
 
-		quadArray.push_back(Quad('*',f1->name,$3->name,word));
-		$$->arrayBase=$1->arrayBase;
+			quadArray.push_back(Quad('*',f1->name,$3->name,word));
+			$$->arrayBase=$1->arrayBase;
 
-		quadArray.push_back(Quad('+',$$->arrSize->name,
-					$1->arrSize->name,f1->name));
-	}	
-	;
+			quadArray.push_back(Quad('+',$$->arrSize->name,
+						$1->arrSize->name,f1->name));
+		}	
+		;
 
 postfix_expression
 	: primary_expression {$$=$1;}
@@ -753,7 +825,6 @@ unary_expression
 				quadArray.push_back(Quad(QADDR,$$->name,$2->name));
 				break;
 			default:
-				printf("default %c %d\n",$1,$1);
 				throw "error in processing unary operators";
 		}
 	}
@@ -967,27 +1038,7 @@ logical_and_expression
 	}
 	;
 
-logical_and_expression_bool
-	: logical_and_expression_bool AND_OP MIndex changeBoolTemp
-	{
-		GENTEMP($$);
-		$$->type.push_back(ii(intT,0));
-		UPDATE($$);
-		
-		if($1->isBoolExp==false)
-			{int2Bool($1);$3++;}
-		if($4->isBoolExp==false)
-			int2Bool($4);
-		$$->isBoolExp=true;
-		
-		
-		backpatch($1->tl,$3);
-		$$->fl=merge($1->fl,$4->fl);
-		$$->tl=$4->tl;
-		getValueNBackpatch($$);
-	}
-	| changeBoolTemp{$$=$1;}
-	;
+
 
 changeBoolTemp
 	:inclusive_or_expression
@@ -1261,8 +1312,8 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 	if(f1->type.size()>1||f2->type.size()>1)
 		throw "invalid type Changing";
 	int check=typeCheck(f1->type,f2->type);
-	printf("\n");
-	f1->print();f2->print();
+	
+	//f1->print();f2->print();
 	Fields* arg1=f1,*arg2=f2,*res;
 	GENTEMP(res);
 

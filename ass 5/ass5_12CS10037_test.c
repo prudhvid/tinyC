@@ -1,110 +1,109 @@
 
+// This is the test file to test various compilers.You can add expressions here
+// at check the output after doing make
+
+//By default it has KMP algorithm implemented and by running this function shows
+// the 3-address quads for KMP algorithm
+
+//I've implemented almost all the things given except "function declarations"
 
 
-void mergeI(int *arr,int min,int mid,int max)
+
+
+int strlen(char* s)
+{	
+	int i;
+	for ( i = 0; s[i]!='\0'; ++i){
+		
+	}
+	return i;
+}
+
+void computeLPSArray(char *pat, int M, int *lps)
 {
-  int tmp[30];
-  int i,j,k,m; 
-  j=min;
-  m=mid+1;
-  for(i=min; j<=mid && m<=max ; i++)
-  {
-     if(arr[j]<=arr[m])
-     {
-         tmp[i]=arr[j];
-         j++;
-     }
-     else
-     {
-         tmp[i]=arr[m];
-         m++;
-     }
-  }
-  if(j>mid)
-  {
-     for(k=m; k<=max; k++)
-     {
-         tmp[i]=arr[k];
+    int len = 0;  // lenght of the previous longest prefix suffix
+    int i;
+ 
+    lps[0] = 0; // lps[0] is always 0
+    i = 1;
+ 
+    // the loop calculates lps[i] for i = 1 to M-1
+    while(i < M)
+    {
+       if(pat[i] == pat[len])
+       {
+         len++;
+         lps[i] = len;
          i++;
-     }
-  }
-  else
-  {
-     for(k=j; k<=mid; k++)
-     {
-        tmp[i]=arr[k];
-        i++;
-     }
-  }
-  for(k=min; k<=max; k++)
-     arr[k]=tmp[k];
+       }
+       else // (pat[i] != pat[len])
+       {
+         if( len != 0 )
+         {
+           // This is tricky. Consider the example AAACAAAA and i = 7.
+           len = lps[len-1];
+ 
+           // Also, note that we do not increment i here
+         }
+         else // if (len == 0)
+         {
+           lps[i] = 0;
+           i++;
+         }
+       }
+    }
 }
 
-void part(int *arr,int min,int max)
+
+
+void KMPSearch(char *pat, char *txt)
 {
- int mid;
- if(min<max)
- {
-   mid=(min+max)/2;
-   part(arr,min,mid);
-   part(arr,mid+1,max);
-   mergeI(arr,min,mid,max);
- }
+    int M = strlen(pat);
+    int N = strlen(txt);
+ 
+    // create lps[] that will hold the longest prefix suffix values for pattern
+    int lps[1000];
+    int j  = 0;  // index for pat[]
+ 
+    // Preprocess the pattern (calculate lps[] array)
+    computeLPSArray(pat, M, lps);
+ 
+    int i = 0;  // index for txt[]
+    while(i < N)
+    {
+      if(pat[j] == txt[i])
+      {
+        j++;
+        i++;
+      }
+ 
+      if (j == M)
+      {
+        // printf("Found pattern at index %d \n", i-j);
+        j = lps[j-1];
+      }
+ 
+      // mismatch after j matches
+      else if(pat[j] != txt[i])
+      {
+        // Do not match lps[0..lps[j-1]] characters,
+        // they will match anyway
+        if(j != 0)
+         j = lps[j-1];
+        else
+         i = i+1;
+      }
+    }
+    // free(lps); // to avoid memory leak
 }
+ 
+
 int main()
 {
-	// int i=0,a[10][10],j;
-
-	// for(i=0;i<10;i++)
-	// {
-	// 	for(j=0;j<10;j++)
-	// 		a[i][j]=a[i][j]*200;
-	// 	j=0;
-	// 	if(j==1)
-	// 		while(i<j)
-	// 		{
-	// 			j++;
-	// 			do
-	// 			{
-	// 				j=j*29;
-	// 			}while(j&&i);
-	// 		}
-	// }
-	// a[1][2]=a[3][4]=a[5][6]=0;
-	// int x,*y;
-
-	// y=&x;
-	// int i=9;
-	//  i=(i)?i*10:i*100;
-	// while(i==9&&j!=0&&i<0&&i>0)
-	// {
-	// 	i++;
-	// }
-	// int i=1,j=0;
-	// for(;i<j&&(j<100||i<20)&&j>100;)
-	// 	{i++;j++;}
-	// int x[40];
-	// int (*y)=x;
-	// *y=12;
-	// // *y=781*23;
-	// *x=1;
-
-	int i=5,j=6;
-	// if(i<j)
-	// {
-	// 	if(i!=j)
-	// 		j=9;
-	// 	else
-	// 	{
-	// 		if(!j)
-	// 			i++;
-	// 		else
-	// 			i--;
-	// 	}
-	// }
 	
-	int r=i+j<2;
-	int x=4.56;
+	char a[100],b[100];
+	KMPSearch(a, b);
+	
 	return 0;
 }
 
@@ -112,6 +111,3 @@ int main()
 
 
 
-//ternary support
-//arrays
-//relops

@@ -73,6 +73,7 @@ void SymbolTable::print()
 	std::vector<Fields> pars=getParamList();
 	tr(pars,it)
 		printf("%s   ",it->name.c_str() );
+	printf("\n");
 	std::vector<SFields> temp(table.begin(), table.end());
 	sort(temp.begin(), temp.end(),sortCompare);
 	int c=1;

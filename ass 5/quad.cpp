@@ -77,8 +77,15 @@ void Quad::emit(const Quad &q){
 			default:
 			if(q.op<=255)
 				printf("%s = %s %c %s\n",q.res,q.arg1,q.op,q.arg2 );
-			else
-				printf("%s = %s %d %s\n",q.res,q.arg1,q.op,q.arg2 );
+			else{
+				if(q.op==267)
+					printf("%s = %s << %s\n",q.res,q.arg1,q.arg2 );
+				else if(q.op==268)
+					printf("%s = %s >> %s\n",q.res,q.arg1,q.arg2 );
+				else
+					printf("%s = %s %d %s\n",q.res,q.arg1,q.op,q.arg2 );
+			}
+				
 		}
 		
 			

@@ -12,11 +12,12 @@ extern SymbolTable* st;
 
 void yyerror(char* s)
 {
-  printf("%s",s);
+  printf("%s at line_number %d\n",s,line_number);
 }
 int main()
 {
-  freopen("decl_test.c", "r", stdin);
+  freopen("ass5_12CS10037_test.c", "r", stdin);
+  // freopen("stat_test_output","w",stdout);
   int token;
   std::string s;
   try{
@@ -27,7 +28,7 @@ int main()
     printf("\nERROR: %s on line_number %d\n",p,line_number+1 );
     st->print();
   }
-
+  printf("Global SymbolTable\n");
   _GLOBST->print();
   
   for (int i = 0; i <quadArray.size() ; ++i){

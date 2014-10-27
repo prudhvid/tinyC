@@ -216,7 +216,7 @@ void count()
 		else
 			column++;
 	if(!isComment)
-		ECHO;
+		;
 	else
 		isComment=0;
 }

@@ -1,0 +1,123 @@
+
+
+	SymbolTable of function gcd
+--------------------SymbolTable---------------------------
+no of params=2
+a   b   
+1	a	4	0	(int 0)  
+2	b	4	4	(int 0)  
+3	c	4	12	(int 0)  
+4	__t0	4	16	(int 0)  
+5	__t1	4	20	(int 0)  
+6	__t2	4	24	(int 0)  
+7	__t3	4	28	(int 0)  
+-----------------------------------------------------------
+
+
+	SymbolTable of function gcdr
+--------------------SymbolTable---------------------------
+no of params=2
+a   b   
+1	gcdr	4	0	
+2	a	4	0	(int 0)  
+3	b	4	4	(int 0)  
+4	__t4	4	12	(int 0)  
+5	__t5	4	16	(int 0)  
+6	__t6	4	20	(int 0)  
+7	__t7	4	24	(int 0)  
+8	__t8	4	28	(int 0)  
+9	__t9	4	32	(int 0)  
+-----------------------------------------------------------
+
+
+	SymbolTable of function gcdv
+--------------------SymbolTable---------------------------
+no of params=0
+
+1	__t10	4	4	(int 0)  
+2	__t11	4	8	(int 0)  
+-----------------------------------------------------------
+
+
+	SymbolTable of function main
+--------------------SymbolTable---------------------------
+no of params=0
+
+1	gcdv	4	0	
+2	gcdr	4	0	
+3	gcd	4	0	
+4	a	4	4	(int 0)  
+5	b	4	8	(int 0)  
+6	c	4	12	(int 0)  
+7	__t12	4	16	(int 0)  
+8	__t13	4	20	(int 0)  
+9	__t14	4	24	(int 0)  
+10	__t15	4	28	(int 0)  
+11	__t16	4	32	(int 0)  
+12	__t17	4	36	(int 0)  
+13	__t18	4	40	(int 0)  
+14	__t19	4	44	(int 0)  
+15	__t20	4	48	(int 0)  
+16	__t21	4	52	(int 0)  
+17	__t22	4	56	(int 0)  
+18	__t23	4	60	(int 0)  
+19	__t24	4	64	(int 0)  
+-----------------------------------------------------------
+Global SymbolTable
+
+--------------------SymbolTable---------------------------
+no of params=0
+
+1	gcd	4	0	(int 0)  
+2	gcdr	4	4	(int 0)  
+3	gcdv	4	8	(int 0)  
+4	main	4	12	(int 0)  
+-----------------------------------------------------------
+  0 : __t0 = 0
+  1 : if a != __t0 goto 3
+  2 : goto 8
+  3 : c = a
+  4 : __t2 = b % a
+  5 : a = __t2
+  6 : b = c
+  7 : goto 0
+  8 : return b
+  9 : return
+ 10 : __t4 = 0
+ 11 : if a = __t4 goto 13
+ 12 : goto 14
+ 13 : return b
+ 14 : __t7 = b % a
+ 15 : param __t7
+ 16 : param a
+ 17 : __t8=call gcdr,2
+ 18 : return __t8
+ 19 : return
+ 20 : __t10 = 0
+ 21 : return __t10
+ 22 : return
+ 23 : __t12 = 299792458
+ 24 : a = __t12
+ 25 : __t13 = 6447287
+ 26 : b = __t13
+ 27 : __t14 = 256964964
+ 28 : c = __t14
+ 29 : param a
+ 30 : param b
+ 31 : __t15=call gcd,2
+ 32 : __t16 = a + b
+ 33 : param a
+ 34 : param __t16
+ 35 : __t17=call gcd,2
+ 36 : __t18 = a * b
+ 37 : __t19=call gcdv,0
+ 38 : __t20 = b * __t19
+ 39 : param __t18
+ 40 : param __t20
+ 41 : __t21=call gcdr,2
+ 42 : param __t17
+ 43 : param __t21
+ 44 : __t22=call gcdr,2
+ 45 : __t23 = 0
+ 46 : return __t23
+ 47 : return
