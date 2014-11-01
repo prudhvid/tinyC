@@ -18,9 +18,11 @@ enum{
 	QRELIFLTE, // if <=
 	QRELIFGTE, //if >=
 	QRENOTE, //if !=
+	QGOTO, //goto
+
+
 	QARRVAL, //a[x]
 	QARRDEREF,//
-	QGOTO, //goto
 	QEQ_OP, //==
 	QNE_OP, //!=
 	QGE_OP, //>=
@@ -33,16 +35,21 @@ enum{
 	QRETURN_NULL,
 	QRETURN,
 	QFUNC,
-	QFUNCEND
+	QFUNCEND,
+	QCHAR2INT,
+	QINT2CHAR,
+	QPASS
 };
 
 /*
 	Quad class to represnt all possible type of quads we wish to emit.
 */
 class Quad{
+	
+public:
 	int op; //the operator present in quad
 	char* res,*arg1,*arg2; //all of the locations are stored as strings
-public:
+	int gotoIndex;
 	Quad(int op1, char *s1, char *s2, char *s3=0); //for binary operations and unary when s3=0
 	Quad(int op1, char *s, int num); //unary operations
 	Quad(char* s1,char* s2); //assignment operations
@@ -60,7 +67,7 @@ public:
 	inline void setRes(const string &s){
 		this->res=strdup(s.c_str());
 	}//to set res operand
-	static void emit(const Quad& q);//prints the current quad accordingly
+	static void emit(Quad& q);//prints the current quad accordingly
 };
 
 }

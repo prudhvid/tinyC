@@ -51,7 +51,7 @@ Quad::Quad(int op,int index)
 }
 
 
-void Quad::emit(const Quad &q){
+void Quad::emit(Quad &q){
 	if(q.arg2!=NULL&&q.arg1!=NULL){
 		//---arithmetic bit logical shift
 		switch(q.op){
@@ -59,17 +59,29 @@ void Quad::emit(const Quad &q){
 				break;
 			case QARRVAL:printf("%s = %s[%s]\n",q.res,q.arg1,q.arg2 );
 				break;
-			case QRELIFEQ:printf("if %s = %s goto %s\n",q.arg1,q.arg2,q.res );
+			case QRELIFEQ:q.gotoIndex=atof(q.res );
+				printf("if %s = %s goto %d\n",q.arg1,q.arg2,q.gotoIndex);
+				
 				break;
-			case QRENOTE:printf("if %s != %s goto %s\n",q.arg1,q.arg2,q.res );
+			case QRENOTE:q.gotoIndex=atof(q.res );
+				printf("if %s != %s goto %d\n",q.arg1,q.arg2,q.gotoIndex);
+				
 				break;
-			case QRELIFGT:printf("if %s %c %s goto %s\n",q.arg1,'>',q.arg2,q.res );
+			case QRELIFGT:q.gotoIndex=atof(q.res );
+				printf("if %s %c %s goto %d\n",q.arg1,'>',q.arg2,q.gotoIndex);
+				
 				break;
-			case QRELIFGTE:printf("if %s >= %s goto %s\n",q.arg1,q.arg2,q.res );
+			case QRELIFGTE:q.gotoIndex=atof(q.res );
+				printf("if %s >= %s goto %d\n",q.arg1,q.arg2,q.gotoIndex);
+				
 				break;
-			case QRELIFLT:printf("if %s %c %s goto %s\n",q.arg1,'<',q.arg2,q.res );
+			case QRELIFLT:q.gotoIndex=atof(q.res );
+				printf("if %s %c %s goto %d\n",q.arg1,'<',q.arg2,q.gotoIndex);
+				
 				break;
-			case QRELIFLTE:printf("if %s <= %s goto %s\n",q.arg1,q.arg2,q.res );
+			case QRELIFLTE:q.gotoIndex=atof(q.res );
+				printf("if %s <= %s goto %d\n",q.arg1,q.arg2,q.gotoIndex);
+				
 				break;
 
 			case QCALL:printf("%s=call %s,%s\n",q.res,q.arg1,q.arg2 );
@@ -94,11 +106,17 @@ void Quad::emit(const Quad &q){
 
 		switch(q.op)
 		{
-			case QGOTO:printf("goto %s\n", q.res);
+			case QGOTO:q.gotoIndex=atof(q.res );
+				printf("goto %d\n", q.gotoIndex);
+				
 				break;
-			case QIF:printf("if %s goto %s\n",q.arg1,q.res );
+			case QIF:q.gotoIndex=atof(q.res );
+				printf("if %s goto %d\n",q.arg1,q.gotoIndex);
+				
 				break;
-			case QIFFALSE:printf("ifFalse %s goto %s\n",q.arg1,q.res );
+			case QIFFALSE:q.gotoIndex=atof(q.res );
+				printf("ifFalse %s goto %d\n",q.arg1,q.gotoIndex);
+				
 				break;
 			case QPARAM:printf("param %s\n",q.res );
 				break;
@@ -115,6 +133,10 @@ void Quad::emit(const Quad &q){
 			case QFUNCEND:printf("function end\n");
 				break;
 			case QFUNC:printf("function %s\n",q.res );
+				break;
+			case QINT2CHAR:printf("%s=INT2CHAR(%s)\n",q.res,q.arg1 );
+				break;
+			case QCHAR2INT:printf("%s=CHAR2INT(%s)\n",q.res,q.arg1 );
 				break;
 			default:
 			if(q.op<=255)

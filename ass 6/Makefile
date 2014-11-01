@@ -1,8 +1,13 @@
-compiler: y.tab.o lex.yy.o myfile.o
-	g++ -g lex.yy.o y.tab.o ass5_12CS10037_translator.o quad.o SymbolTable.o myfile.o -lfl
+compile:compiler asm_file
+	gcc -m32 out.s
+asm_file:compiler
+	./compiler ass5_12CS10037_test.c > out.s
 
-myfile.o: myfile.c
-	g++ -g -c myfile.c -lfl
+compiler: y.tab.o lex.yy.o target_generate.o
+	g++ -o compiler lex.yy.o y.tab.o ass5_12CS10037_translator.o quad.o SymbolTable.o target_generate.o -lfl
+
+target_generate.o: target_generate.cpp
+	g++ -g -c target_generate.cpp -lfl
 
 y.tab.o: y.tab.c y.tab.h
 	g++ -g -c -Wno-write-strings y.tab.c 
@@ -28,4 +33,4 @@ SymbolTable.o: SymbolTable.cpp SymbolTable.h
 	g++ -g -c SymbolTable.cpp
 
 clean:
-	rm y.tab.c y.tab.h lex.yy.c ass5_12CS10037.o *.o
+	rm y.tab.c y.tab.h lex.yy.c ass5_12CS10037.o *.o compiler out.s y.output

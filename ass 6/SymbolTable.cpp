@@ -24,7 +24,7 @@ bool parCom(const SFields &s1,const SFields& s2)
 }
 
 SymbolTable::SymbolTable()
-:n(0),parOff(-8),localOff(4),offset(0),paramNum(0)
+:n(0),parOff(8),localOff(0),offset(0),paramNum(0)
 {
 	nameindex.clear();
 	table.clear();
@@ -84,7 +84,8 @@ void SymbolTable::print()
 	sort(temp.begin(), temp.end(),sortCompare);
 	int c=1;
 	tr(temp,it)	{
-		printf("%d\t%s\t%d\t%d\t%d\t",c, it->name.c_str(),it->size,it->offset,it->actOffset);
+		printf("%d\t%s\t%d\t%d\t%d\t%d\t%d\t",c, it->name.c_str(),it->size,it->offset,
+			it->actOffset,it->isConst,nameindex[it->name]);
 		For(i, 0, it->type.size()){
 			printf("(%s %d)  ",nameSizeArray[it->type[i].first].c_str(),
 								 it->type[i].second );
@@ -152,18 +153,22 @@ std::vector<Fields> SymbolTable::getParamList()
 void SymbolTable::activationRecords()
 {
 	sort(table.begin(),table.end(),parCom);
-
+	nameindex.clear();
 	For(i, 0, table.size())
 	{
 		if(table[i].parNum!=DEFAULT_PAR_NO){
 			table[i].actOffset=parOff;
-			parOff-=table[i].size;
+			parOff+=table[i].size;
 		}
 		else{
+			localOff-=table[i].size;
 			table[i].actOffset=localOff;
-			localOff+=table[i].size;
 		}
+		nameindex[table[i].name]=i;
 	}
+
+	
+
 }
 
 

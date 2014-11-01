@@ -166,7 +166,7 @@ class SymbolTable{
 		The tabe is stored in form of array where every symbol is mapped to an 
 		index in this array
 	*/
-	std::vector<SFields> table;
+	public:std::vector<SFields> table;
 
 	/*
 		hashmap to store symbolnames to indices in the symboltable
@@ -176,14 +176,15 @@ class SymbolTable{
 		number of symbols present 
 	*/
 	int n; 
-	int parOff;
-	int localOff;
+	
 public:
 	/*
 		The current offset of ST
 	*/
 	int offset; 
 	int paramNum; //the number of parameters that it has
+	int parOff;
+	int localOff;
 	SymbolTable(); 
 	/*
 		A method to lookup an id (given its name or lexeme)

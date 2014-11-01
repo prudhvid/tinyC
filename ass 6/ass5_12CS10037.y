@@ -1214,6 +1214,7 @@ CONSTANT
 		temp++;
 		//temp[strlen(temp)-1]='\0';
 		sprintf(temp,"%d",temp[0]);
+		$$->isConst=true;
 		quadArray.push_back(Quad($$->name,temp));
 	
 	}
@@ -1240,9 +1241,7 @@ Fields* char2int(Fields* f)
 	GENTEMP(res);
 	res->type.push_back(ii(intT,0));
 	UPDATE(res);
-	string val="char2int( ";
-	string end=" )";
-	quadArray.push_back(Quad(res->name,val+string(f->name)+end));
+	quadArray.push_back(Quad(QCHAR2INT,res->name,f->name));
 	return res;
 }
 
@@ -1299,9 +1298,7 @@ Fields* int2char(Fields* f)
 	GENTEMP(res);
 	res->type.push_back(ii(doubleT,0));
 	UPDATE(res);
-	string val="int2char( ";
-	string end=" )";
-	quadArray.push_back(Quad(res->name,val+string(f->name)+end));
+	quadArray.push_back(Quad(QINT2CHAR,res->name,f->name));
 	return res;
 }
 
