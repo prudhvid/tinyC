@@ -24,7 +24,7 @@ bool parCom(const SFields &s1,const SFields& s2)
 }
 
 SymbolTable::SymbolTable()
-:n(0),parOff(8),localOff(0),offset(0),paramNum(0)
+:n(0),offset(0),paramNum(0),parOff(8),localOff(0),parent(NULL),stackOffset(0)
 {
 	nameindex.clear();
 	table.clear();
@@ -167,8 +167,21 @@ void SymbolTable::activationRecords()
 		nameindex[table[i].name]=i;
 	}
 
-	
-
+	For(i, 0, table.size()){
+		if(table[i].size==0){
+			Fields* f=parent->lookup(table[i].name);
+			std::vector<Fields> v=f->nestedTable->getParamList();
+			int sS=0;
+			For(j, 0, v.size())
+			{
+				sS+=v[j].size;
+			}
+			if(sS>stackOffset)
+				stackOffset=sS;
+			printf("stackOffset=%d and sS=%d\n",
+			 stackOffset);
+		}
+	}
 }
 
 

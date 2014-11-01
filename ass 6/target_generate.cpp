@@ -19,7 +19,7 @@ void yyerror(char* s)
 int labelNo=0;
 extern std::vector<Quad> quadArray;
 int labelArray[10000]={NO_LABEL};
-int paramESPoffset=-4;
+int paramESPoffset=0;
 
 
 
@@ -34,7 +34,7 @@ SymbolTable* currst;
 
 int recursiveRemove(int index)
 {
-	if(quadArray[index].op>QGOTO)
+	if(quadArray[index].op>QGOTO||quadArray[index].op==0)
 	{
 		return index;
 	}
@@ -55,8 +55,11 @@ void removeGotoNLabel()
 
 	for (int i = 0; i < quadArray.size(); ++i){
 		if(quadArray[i].op<=QGOTO&&quadArray[i].op!=0){
-			if(labelArray[quadArray[i].gotoIndex]==-100)
+			
+			if(labelArray[quadArray[i].gotoIndex]==NO_LABEL){
 				labelArray[quadArray[i].gotoIndex]=labelNo++;
+			}
+				
 		}
 	}
 }
@@ -101,9 +104,9 @@ void functionStart(const Quad& q)
 	emitLabel(q.res);
 	emit(PUSHL,EBP);
 	emit(MOVL,ESP,EBP);
-	if(currst->localOff<0)
-		emit(ADDL,currst->localOff,ESP);
-	paramESPoffset=-4;
+	if(currst->localOff-currst->stackOffset<0)
+		emit(ADDL,currst->localOff-currst->stackOffset,ESP);
+	paramESPoffset=0;
 }
 
 
@@ -131,14 +134,21 @@ void assignmentOpe(const Quad& q)
 
 	arg=currst->search(q.arg1);
 
+
 	int s=getSize(res->type);
 
 	string mov,reg;
 	mov=(s==1)?MOVB:MOVL;
 	reg=(s==1)?AL:EaX;
-
-	emit(MOVL,arg,reg);
-	emit(MOVL,reg,res);
+	if(arg->isConst)
+	{
+		emit(MOVL,arg->val.intVal,res);
+	}
+	else{
+		emit(MOVL,arg,reg);
+		emit(MOVL,reg,res);
+	}
+		
 }
 
 
@@ -148,6 +158,7 @@ void binaryOp(const Quad& q)
 	res=currst->search(q.res);
 	arg1=currst->search(q.arg1);
 	arg2=currst->search(q.arg2);
+	
 	int op=q.op;
 	switch(op)
 	{
@@ -169,10 +180,24 @@ void binaryOp(const Quad& q)
 		case '*':
 		{
 			emit(MOVL,arg1,EaX);
-			emit(MOVL,arg2,EbX);
-			string oper=(op=='+')?ADDL:((op=='-')?SUBL:MUL);
-			emit(oper,EbX,EaX);
-			emit(MOVL,EaX,res);
+			if(arg2==NULL){
+				if(op=='+'&&strcmp(q.arg2,"1" )==0){
+					emit(INCL,arg1);
+				}
+				else if(op=='-'&&strcmp(q.arg2,"1" )==0){
+					emit(DECL,arg1);
+				}
+				else
+					throw "gone!! again";
+
+			}
+			else{
+				emit(MOVL,arg2,EbX);
+				string oper=(op=='+')?ADDL:((op=='-')?SUBL:MUL);
+				emit(oper,EbX,EaX);
+				emit(MOVL,EaX,res);
+			}
+			
 		}
 		break;
 
@@ -255,8 +280,12 @@ void binaryOp(const Quad& q)
 
 		case QCALL:
 		{
-			emit(CALL,q.res);
-			paramESPoffset=-4;
+			emit(CALL,q.arg1);
+			paramESPoffset=0;
+			int s=getSize(currst->search(q.res)->type);
+			string reg=(s==1)?AL:EaX;
+			string op=(s==1)?MOVB:MOVL;
+			emit(op,reg,currst->search(q.res));
 		}
 		break;
 
@@ -265,9 +294,13 @@ void binaryOp(const Quad& q)
 
 void unaryOp(const Quad&q)
 {
+	Quad q1=q;
+	Quad::emit(q1);
 	Fields *res,*arg;
-	res=currst->search(q.res);
-	if(q.op!=QRETURN_NULL&&q.op!=QFUNCEND)
+	if(q.op!=QRETURN_NULL&&q.op!=QFUNCEND&&q.op!=QGOTO)
+		res=currst->search(q.res);
+	if(q.op!=QRETURN_NULL&&q.op!=QFUNCEND&&q.op!=QRETURN
+		&&q.op!=QPARAM&&q.op!=QFUNC&&q.op!=QGOTO)
 		arg=currst->search(q.arg1);
 	int op=q.op;
 
@@ -284,9 +317,18 @@ void unaryOp(const Quad&q)
 		break;
 
 		case QRETURN:
+		{
+			Fields *res=currst->search(q.res);
+			int s=getSize(res->type);
+			string reg=(s==1)?AL:EaX;
+			string op=(s==1)?MOVB:MOVL;
+			emit(op,res,EaX);
+			functionEnd(q);
+		}
+
+			break;
 		case QRETURN_NULL:
-			emit(LEAVE);
-			emit(RET);
+			functionEnd(q);
 		break;
 
 		case QINT2CHAR:
@@ -295,15 +337,46 @@ void unaryOp(const Quad&q)
 			break;
 
 		case QPARAM:
-		{
-			Fields *res=currst->search(q.res);
+		{	
 			int s=getSize(res->type);
 			string reg=(s==1)?AL:EaX;
 			string op=(s==1)?MOVB:MOVL;
 
 			emit(op,res,reg);
 			emit(MOVL,reg,paramESPoffset,ESP);
-			paramESPoffset-=s;
+			paramESPoffset+=s;
+		}
+		break;
+
+		case QADDR:
+		{
+			emit(LEAL,arg,EaX);
+			emit(MOVL,EaX,res);
+		}
+		break;
+
+		case QPOINTER:
+		{
+			//a=*b
+			int s=getSize(res->type);
+			string reg=(s==1)?AL:EaX;
+			string op=(s==1)?MOVB:MOVL;
+			emit(op,arg,reg);
+			emit(op,0,reg,reg);
+			emit(MOVL,reg,res);
+		}
+		break;
+
+		case QPOINTERDER:
+		{
+			int s=getSize(arg->type);
+			string reg=(s==1)?AL:EaX;
+			string op=(s==1)?MOVB:MOVL;
+			string reg2=(s==1)?BL:EbX;
+			emit(op,arg,reg);
+			emit(op,res,reg2);
+			emit(op,reg,0,reg2);
+			
 		}
 		break;
 	}
@@ -322,11 +395,13 @@ void globalsEmit(string filename)
 	.globl	add
 	.type	add, @function
 	*/
-	printf(".file\t\"%s\"\n", filename.c_str());
-	printf(".text\n");
+	char word[40];
+	sprintf(word, "\"%s\"",filename.c_str());
+	emit(".file", word);
+	emit(".text");
 	for (int i = 0; i < _GLOBST->table.size(); ++i){
-		printf(".globl\t%s\n", _GLOBST->table[i].name.c_str());
-		printf(".type\t%s,@function\n", _GLOBST->table[i].name.c_str());
+		emit(".globl", _GLOBST->table[i].name.c_str());
+		emit(".type", _GLOBST->table[i].name.c_str(),"@function");
 	}
 }
 
@@ -362,42 +437,56 @@ int main(int argc, char const *argv[])
 
 	freopen("ass5_12CS10037_test.c", "r", stdin);
 	// freopen("stat_test_output","w",stdout);
-	fopen("out.s", "w");
+	// FILE *fp= fopen("out.s", "w");
 	int token;
 	std::string s;
 	try{
-	yyparse();  
+		yyparse();  
 	}
 	catch(const char* p)
 	{
 		printf("\nERROR: %s on line_number %d\n",p,line_number+1 );
 		st->print();
 	}
+	// for (int i = 0; i < quadArray.size(); ++i){
+	// 	/* code */
+	// 	Quad &q=quadArray[i];
+	// 	printf("%3d:",i );
+	// 	Quad::emit(q);
+	// }
+	// _GLOBST->print();
+	// globalsEmit("ass5_12CS10037_test.c");
+	// for (int i = 0; i < quadArray.size(); ++i){
+	// 	labelArray[i]=NO_LABEL;
+	// }
+	// removeGotoNLabel();
 	
+	// try{
 
-	globalsEmit("ass5_12CS10037_test.c");
-	removeGotoNLabel();
-	for (int i = 0; i < quadArray.size(); ++i){
-		// printf("\t");
+	// 	for (int i = 0; i < quadArray.size(); ++i){
+	// 	// printf("\t");
 
-		Quad &q=quadArray[i];
-		// Quad::emit(q);
-		// if(labelArray[i]!=NO_LABEL){
-		// 	emitLabel(getLabelName(labelArray[i]));
-		// }
-		if(q.op==QFUNC){
-			currst=_GLOBST->lookup(q.res)->nestedTable;
-		}
-		if(q.arg2!=NULL&&q.arg1!=NULL){
-			binaryOp(q);
-		}
-		else if(q.arg2==NULL&&q.op!=0){
-			unaryOp(q);
-		}
-		else
-			assignmentOpe(q);
-	}
-
-
+	// 	Quad &q=quadArray[i];
+	// 	if(labelArray[i]!=NO_LABEL){
+	// 		emitLabel(getLabelName(labelArray[i]));
+	// 	}
+	// 	if(q.op==QFUNC){
+	// 		currst=_GLOBST->lookup(q.res)->nestedTable;
+	// 	}
+	// 	if(q.arg2!=NULL&&q.arg1!=NULL){
+	// 		binaryOp(q);
+	// 	}
+	// 	else if(q.arg2==NULL&&q.op!=0){
+	// 		unaryOp(q);
+	// 	}
+	// 	else
+	// 		assignmentOpe(q);
+	// 	}
+	// }
+	// catch(const char* s){
+	// 	printf("%s\n",s );
+	// }
+	// fprintf(fp, "%s\n", outs);	
+	// fclose(fp);
 	return 0;
 }

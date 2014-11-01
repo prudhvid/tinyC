@@ -271,6 +271,7 @@ direct_declarator
 	{
 		quadArray.push_back(Quad(QFUNC,$1->name,""));
 		st=new SymbolTable();
+		st->parent=_GLOBST;
 		funcRetType=$1->type;
 		funcRetType.push_back(ii(funcRetSet,0));
 		Fields* f=_GLOBST->lookup($1->name);
@@ -306,6 +307,7 @@ parameter_list
 	{
 		Fields f1=*$2;
 		st=new SymbolTable();
+		st->parent=_GLOBST;
 		Fields *f=st->lookup(f1.name);
 		int s=f1.type.size();
 		f->type=f1.type;
@@ -544,6 +546,8 @@ external_declaration
 	| declaration
 	{
 		quadArray.pop_back();
+		st->activationRecords();
+		st->print();
 	}
 	;
 
@@ -1215,6 +1219,8 @@ CONSTANT
 		//temp[strlen(temp)-1]='\0';
 		sprintf(temp,"%d",temp[0]);
 		$$->isConst=true;
+		$$->val.intVal=atoi(yytext);
+		$$->val.charVal=atoi(yytext);
 		quadArray.push_back(Quad($$->name,temp));
 	
 	}

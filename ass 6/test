@@ -1,0 +1,115 @@
+./compiler ass5_12CS10037_test.c
+
+--------------------SymbolTable---------------------------
+no of params=1
+p   
+1	p	4	0	8	0	0	(int 0)  
+-----------------------------------------------------------
+
+--------------------SymbolTable---------------------------
+no of params=1
+eP   
+1	eP	4	0	8	0	0	(pointer 0)  (int 0)  
+-----------------------------------------------------------
+
+--------------------SymbolTable---------------------------
+no of params=2
+a   b   
+1	a	4	0	8	0	0	(int 0)  
+2	b	4	4	12	0	1	(int 0)  
+-----------------------------------------------------------
+
+
+	SymbolTable of function add
+--------------------SymbolTable---------------------------
+no of params=2
+x   y   
+1	x	4	0	8	0	0	(int 0)  
+2	y	4	4	12	0	1	(int 0)  
+3	__t0	4	12	-4	0	2	(int 0)  
+4	__t1	4	16	-8	0	3	(int 0)  
+-----------------------------------------------------------
+
+
+	SymbolTable of function mainstackOffset=0
+stackOffset=4
+
+--------------------SymbolTable---------------------------
+no of params=0
+
+1	printi	0	0	0	0	0	
+2	readi	0	0	0	0	1	
+3	x1	4	4	-4	0	2	(int 0)  
+4	y1	4	8	-8	0	3	(int 0)  
+5	__t2	4	12	-12	0	4	(pointer 0)  (int 0)  
+6	__t3	4	16	-16	0	5	(int 0)  
+7	__t4	4	20	-20	0	6	(pointer 0)  (int 0)  
+8	__t5	4	24	-24	0	7	(int 0)  
+9	__t6	4	28	-28	1	8	(int 0)  
+10	__t7	4	32	-32	1	9	(int 0)  
+11	__t8	4	36	-36	0	10	(int 0)  
+12	i	4	40	-40	0	11	(int 0)  
+13	__t9	4	44	-44	0	12	(int 0)  
+14	__t10	4	48	-48	1	13	(int 0)  
+15	__t11	4	52	-52	1	14	(int 0)  
+16	__t12	4	56	-56	0	15	(int 0)  
+17	__t13	4	60	-60	0	16	(int 0)  
+18	__t14	4	64	-64	0	17	(int 0)  
+19	__t15	4	68	-68	1	18	(int 0)  
+20	__t16	4	72	-72	0	19	(int 0)  
+-----------------------------------------------------------
+  0:function add
+  1:__t0 = x + y
+  2:return __t0
+  3:function end
+  4:function main
+  5:__t2=&x1
+  6:param __t2
+  7:__t3=call readi,1
+  8:__t4=&y1
+  9:param __t4
+ 10:__t5=call readi,1
+ 11:__t6 = 4
+ 12:__t7 = 5
+ 13:__t8 = __t6 + __t7
+ 14:i = __t8
+ 15:__t9 = i
+ 16:i = i + 1
+ 17:__t10 = 0
+ 18:i = __t10
+ 19:__t11 = 100
+ 20:if i < __t11 goto 25
+ 21:goto 28
+ 22:__t13 = i
+ 23:i = i + 1
+ 24:goto 19
+ 25:param i
+ 26:__t14=call printi,1
+ 27:goto 22
+ 28:__t15 = 0
+ 29:return __t15
+ 30:function end
+
+--------------------SymbolTable---------------------------
+no of params=0
+
+1	add	4	0	0	0	3	(int 0)  
+2	main	4	4	0	0	4	(int 0)  
+3	readi	4	4	0	0	1	(int 0)  
+4	printi	4	4	0	0	0	(int 0)  
+5	printi2	4	8	0	0	2	(int 0)  
+-----------------------------------------------------------
+function add
+return __t0
+function end
+function main
+__t2=&x1
+param __t2
+__t4=&y1
+param __t4
+goto 28
+goto 19
+param i
+goto 22
+return __t15
+function end

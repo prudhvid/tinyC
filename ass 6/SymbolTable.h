@@ -185,6 +185,8 @@ public:
 	int paramNum; //the number of parameters that it has
 	int parOff;
 	int localOff;
+	int stackOffset;
+	SymbolTable* parent;
 	SymbolTable(); 
 	/*
 		A method to lookup an id (given its name or lexeme)
