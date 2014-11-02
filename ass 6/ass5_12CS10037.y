@@ -548,6 +548,10 @@ external_declaration
 		quadArray.pop_back();
 		st->activationRecords();
 		st->print();
+		_TEMPST->clearTable();
+		st=_TEMPST;
+		funcRetType.clear();
+		funcRetSet=0;
 	}
 	;
 
@@ -828,15 +832,11 @@ unary_expression
 				break;
 			}
 			case '&':
-				if($2->type.size()>0&&$2->type[0].first==pointerT){
-					$$->type=$2->type;
-					$$->type.push_back(ii(pointerT,0));
-				}
-				else {
+			
 					$$->type.push_back(ii(pointerT,0));
 					$$->type.insert($$->type.end(),$2->type.begin(),
 									$2->type.end());
-				}
+			
 					
 				UPDATE($$);
 				quadArray.push_back(Quad(QADDR,$$->name,$2->name));
@@ -1325,8 +1325,8 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 {
 	if(f1->type.size()==0||f2->type.size()==0)
 		throw "non initialized types";
-	if(f1->type.size()>1||f2->type.size()>1)
-		throw "invalid type Changing";
+	//if(f1->type.size()>1||f2->type.size()>1)
+	//	throw "invalid type Changing";
 	int check=typeCheck(f1->type,f2->type);
 	
 	//f1->print();f2->print();
@@ -1338,6 +1338,8 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 
 	int greaterT=min(t1,t2),lesserT=max(t1,t2);
 
+	if(lesserT==arrayT)
+		swap(lesserT,greaterT);
 	//by def arg1 holds the greater type
 	if(greaterT!=t1)
 		swap(arg1,arg2);
@@ -1369,6 +1371,36 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 			arg2=char2double(arg2);
 		res->type.push_back(ii(doubleT,0));
 		UPDATE(res);
+	}
+	else if(greaterT==arrayT)
+	{
+		if(lesserT>charT||lesserT==doubleT)
+			throw "unsupprted array operations";
+		
+		if(lesserT==charT)
+			arg2=char2int(arg2);
+
+
+		if(op=='+'||op=='-')
+		{
+			Fields* f;GENTEMP(f);
+			f->type.push_back(ii(intT,0));
+			UPDATE(f);
+			Type temp(arg1->type.begin()+1,arg1->type.end());
+			int s=getSize(temp);
+			char word[20];sprintf(word,"%d",s);
+			quadArray.push_back(Quad('*',f->name,arg2->name,
+									word));
+			quadArray.push_back(Quad('+',res->name,arg1->name,
+									f->name));
+			res->type.clear();
+			res->type.push_back(ii(pointerT,0));
+			res->type.insert(res->type.begin()+1,temp.begin(),temp.end());
+			UPDATE(res);
+			return res;
+		}
+		else
+			throw "unsupprted array operations";
 	}
 	quadArray.push_back(Quad(op,res->name,arg1->name
 						,arg2->name));

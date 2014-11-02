@@ -86,6 +86,8 @@ void Quad::emit(Quad &q){
 
 			case QCALL:printf("%s=call %s,%s\n",q.res,q.arg1,q.arg2 );
 				break;
+			case QPASS:printf("pass\n");
+				break;
 			default:
 			if(q.op<=255)
 				printf("%s = %s %c %s\n",q.res,q.arg1,q.op,q.arg2 );
@@ -138,6 +140,8 @@ void Quad::emit(Quad &q){
 				break;
 			case QCHAR2INT:printf("%s=CHAR2INT(%s)\n",q.res,q.arg1 );
 				break;
+			case QPASS:printf("pass\n");
+				break;
 			default:
 			if(q.op<=255)
 				printf("%s = %c %s\n",q.res,q.op,q.arg1 );
@@ -149,7 +153,13 @@ void Quad::emit(Quad &q){
 				
 	}
 	else
-		printf("%s = %s\n",q.res,q.arg1 );
+	{
+		if(q.op==QPASS)
+			printf("pass\n");
+		else
+			printf("%s = %s\n",q.res,q.arg1 );		
+	}
+		
 }
 
 }//end of quad namespace

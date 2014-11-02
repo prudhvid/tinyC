@@ -230,8 +230,17 @@ public:
 	*/
 	std::vector<Fields> getParamList();
 
-
+	
 	void activationRecords();
+
+	inline bool isTemp(char*s)
+	{
+		if(strlen(s)<3)
+			return false;
+		if(s[0]=='_'&&s[1]=='_'&&s[2]=='t')
+			return true;
+		return false;
+	}	
 };
 
 #endif

@@ -49,10 +49,10 @@ void removeGotoNLabel()
 	// 		recursiveRemove(i);
 	// }
 	
-	// for (int i = 0; i < quadArray.size(); ++i){
-	// 	if(quadArray[i].op==QGOTO&& quadArray[i].gotoIndex==i+1)
-	// 		quadArray[i].op=QPASS;
-	// }
+	for (int i = 0; i < quadArray.size(); ++i){
+		if(quadArray[i].op==QGOTO&& quadArray[i].gotoIndex==i+1)
+			quadArray[i].op=QPASS;
+	}
 
 	for (int i = 0; i < quadArray.size(); ++i){
 		if(quadArray[i].op<=QGOTO&&quadArray[i].op!=0){
@@ -63,6 +63,43 @@ void removeGotoNLabel()
 				
 		}
 	}
+
+	// for (int i = 0; i < quadArray.size(); ++i){
+	// 	Quad&q=quadArray[i];
+	// 	if(q.op!=QPARAM&&q.op!=QRETURN&&q.op!=QFUNC
+	// 		&&q.op!=QFUNCEND&&q.op!=QPASS&&q.op!=QCALL){
+
+
+	// 		if(q.res!=NULL&&currst->isTemp(q.res)){
+	// 			bool qpassF=true;
+	// 			For(j, i+1, quadArray.size()){
+
+	// 				Quad&q2=quadArray[j];
+	// 				int boolVal;
+	// 				if(q2.op==QPARAM||q.op==QRETURN||q.op==QFUNC)
+	// 					boolVal=(strcmp(q2.res,q.res)==0)?1:0;
+	// 				else if(q2.arg1==NULL&&q2.arg2==NULL)
+	// 					continue;
+	// 				else if(q2.arg2==NULL)
+	// 					boolVal=(strcmp(q.res, q2.arg1)==0)?1:0;
+	// 				else if(q.arg1==NULL)
+	// 					boolVal=(strcmp(q.res, q2.arg2)==0)?1:0;
+	// 				else
+	// 					boolVal=(strcmp(q.res, q2.arg2)==0)||(strcmp(q.res, q2.arg1)==0);
+
+	// 				if(boolVal){
+	// 					qpassF=false;
+	// 					break;
+	// 				}
+	// 			}
+	// 			if(qpassF)
+	// 				q.op=QPASS;
+	// 		}
+	// 	}
+			
+	// }
+	
+
 }
 
 
@@ -79,8 +116,7 @@ void convOp(const Quad& q)
 		}
 		else
 			emit(MOVB,arg,AL);
-		emit(MOVSBL,AL,EaX);
-		emit(MOVL, EaX,res);
+		emit(MOVSBL,AL,res);
 	}
 	else if(q.op==QINT2CHAR){
 		if(arg->isConst){
@@ -88,7 +124,7 @@ void convOp(const Quad& q)
 		}
 		else
 			emit(MOVL,arg,EaX);
-		emit(MOVL, EaX,res);	
+		emit(MOVB, AL,res);	
 	}
 	else
 		throw "such a type conv not supported";
@@ -206,7 +242,10 @@ void binaryOp(const Quad& q)
 
 			}
 			else{
-				emit(MOVL,arg1,EaX);
+				if(arg1->type[0].first==arrayT)
+					emit(LEAL,arg1,EaX);
+				else
+					emit(MOVL,arg1,EaX);
 				emit(MOVL,arg2,EbX);
 				string oper=(op=='+')?ADDL:((op=='-')?SUBL:MUL);
 				emit(oper,EbX,EaX);
@@ -262,7 +301,10 @@ void binaryOp(const Quad& q)
 		case QRELIFLTE:
 		{
 			emit(MOVL,arg1,EaX);
-			emit(MOVL,arg2,EbX);
+			if(arg2!=NULL)
+				emit(MOVL,arg2,EbX);
+			else
+				emit(MOVL,atoi(q.arg2),EbX);
 			emit(CMP,EbX,EaX);
 			string oper;
 			switch(op)
@@ -297,10 +339,13 @@ void binaryOp(const Quad& q)
 		{
 			emit(CALL,q.arg1);
 			paramESPoffset=0;
-			int s=getSize(currst->search(q.res)->type);
+			int s=getSize(res->type);
+			if(s==0)
+				break;
+			//stroing the return value in res
 			string reg=(s==1)?AL:EaX;
 			string op=(s==1)?MOVB:MOVL;
-			emit(op,reg,currst->search(q.res));
+			emit(op,reg,res);
 		}
 		break;
 		case QARRDEREF:
@@ -311,8 +356,10 @@ void binaryOp(const Quad& q)
 			string reg2=(s==1)?BL:EbX;
 			string op=(s==1)?MOVB:MOVL;
 			string addop=(s==1)?ADDB:ADDL;
-
-			emit(LEAL,res,EaX);
+			if(res->type[0].first!=pointerT)
+				emit(LEAL,res,EaX);
+			else
+				emit(MOVL,res,EaX);
 
 			emit(ADDL,arg1,EaX);
 
@@ -328,8 +375,10 @@ void binaryOp(const Quad& q)
 			string reg2=(s==1)?BL:EbX;
 			string op=(s==1)?MOVB:MOVL;
 			string addop=(s==1)?ADDB:ADDL;
-
-			emit(LEAL,arg1,EaX);
+			if(arg1->type[0].first!=pointerT)
+				emit(LEAL,arg1,EaX);
+			else
+				emit(MOVL,arg1,EaX);
 			emit(ADDL,arg2,EaX);
 			emit(op,0,EaX,reg2);
 			emit(op,reg2,res);
@@ -385,7 +434,7 @@ void unaryOp(const Quad&q)
 
 		case QPARAM:
 		{	
-			if(res->type[0].first==arrayT){
+			if(res->type[0].first==arrayT&&res->type[0].first!=pointerT){
 				emit(LEAL,res,EaX);
 				emit(MOVL,EaX,paramESPoffset,ESP);
 				paramESPoffset+=4;
@@ -468,26 +517,6 @@ void globalsEmit(string filename)
 
 int main(int argc, char const *argv[])
 {	
-	/*	quadArray.assign(10, Quad(QGOTO,0));
-		quadArray[0]=Quad(QGOTO,1);
-		quadArray[1]=Quad(QGOTO,2);
-		quadArray[2]=Quad(QGOTO,3);
-		quadArray[3]=Quad(QGOTO,4);
-		quadArray[4]=Quad(QADDR,8);
-		quadArray[5]=Quad(QGOTO,6);
-		quadArray[6]=Quad(QGOTO,8);
-		quadArray[7]=Quad(QGOTO,8);
-		quadArray[8]=Quad(QADDR,9);
-		quadArray[9]=Quad(QADDR,1);
-
-		for (int i = 0; i < 10; ++i){
-			Quad::emit(quadArray[i]);
-		}
-		removeGotoNLabel();
-		for (int i = 0; i < 10; ++i){
-			printf("index=%d %d %d\n",i,quadArray[i].gotoIndex,labelArray[i] );
-		}
-	*/
 
 	freopen("ass5_12CS10037_test.c", "r", stdin);
 	// freopen("stat_test_output","w",stdout);
@@ -514,12 +543,12 @@ int main(int argc, char const *argv[])
 		labelArray[i]=NO_LABEL;
 	}
 	removeGotoNLabel();
-	// for (int i = 0; i < quadArray.size(); ++i){
-	// 	/* code */
-	// 	Quad &q=quadArray[i];
-	// 	printf("%3d:",i );
-	// 	Quad::emit(q);
-	// }
+	for (int i = 0; i < quadArray.size(); ++i){
+		/* code */
+		Quad &q=quadArray[i];
+		printf("%3d:",i );
+		Quad::emit(q);
+	}
 	
 	try{
 
@@ -530,6 +559,8 @@ int main(int argc, char const *argv[])
 		if(labelArray[i]!=NO_LABEL){
 			emitLabel(getLabelName(labelArray[i]));
 		}
+		if(q.op==QPASS)
+			continue;
 		if(q.op==QFUNC){
 			currst=_GLOBST->lookup(q.res)->nestedTable;
 		}

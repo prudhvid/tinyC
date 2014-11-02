@@ -68,6 +68,7 @@ public:
 		this->res=strdup(s.c_str());
 	}//to set res operand
 	static void emit(Quad& q);//prints the current quad accordingly
+	
 };
 
 }
