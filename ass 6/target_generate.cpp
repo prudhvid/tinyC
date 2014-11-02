@@ -20,7 +20,7 @@ int labelNo=0;
 extern std::vector<Quad> quadArray;
 int labelArray[10000]={NO_LABEL};
 int paramESPoffset=0;
-
+int stringLabelNo=0;
 
 
 
@@ -116,7 +116,8 @@ void convOp(const Quad& q)
 		}
 		else
 			emit(MOVB,arg,AL);
-		emit(MOVSBL,AL,res);
+		emit(MOVSBL,AL,EaX);
+		emit(MOVL,EaX,res);
 	}
 	else if(q.op==QINT2CHAR){
 		if(arg->isConst){
@@ -138,6 +139,17 @@ void functionStart(const Quad& q)
 	andl	$-16, %esp
 	subl	$32, %esp
 	*/
+
+	SymbolTable* ftable=_GLOBST->lookup(q.res)->nestedTable;
+	std::vector<Fields*> v=ftable->getConstStrings();
+	For(i, 0, v.size()){
+		v[i]->stringLabel=stringLabelNo;
+		string label=getStringLabelName(stringLabelNo);
+		
+		emitStringLabel(label, v[i]->val.stringVal);
+
+		stringLabelNo++;
+	}
 	emitLabel(q.res);
 	emit(PUSHL,EBP);
 	emit(MOVL,ESP,EBP);
@@ -482,6 +494,12 @@ void unaryOp(const Quad&q)
 			
 		}
 		break;
+
+		case QSTRING:
+		{
+
+		}
+		break;
 	}
 }
 
@@ -543,12 +561,12 @@ int main(int argc, char const *argv[])
 		labelArray[i]=NO_LABEL;
 	}
 	removeGotoNLabel();
-	for (int i = 0; i < quadArray.size(); ++i){
-		/* code */
-		Quad &q=quadArray[i];
-		printf("%3d:",i );
-		Quad::emit(q);
-	}
+	// for (int i = 0; i < quadArray.size(); ++i){
+	// 	/* code */
+	// 	Quad &q=quadArray[i];
+	// 	printf("%3d:",i );
+	// 	Quad::emit(q);
+	// }
 	
 	try{
 

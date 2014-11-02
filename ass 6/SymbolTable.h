@@ -110,11 +110,13 @@ struct Fields{
 		int parNum;
 		int actOffset;
 		bool isfname;
+		bool isStringConst;
+		int stringLabel;
 		ListType tl,fl;//true list and false lists
 		Fields():type(),loc(NULL),size(0),offset(0),nestedTable(NULL),
 				isConst(false),isBoolExp(false),arrSize(NULL),
 				isArray(false),isPointer(false),parNum(DEFAULT_PAR_NO),
-				isfname(false)
+				isfname(false),isStringConst(false),stringLabel(0)
 				
 				{}
 
@@ -240,7 +242,9 @@ public:
 		if(s[0]=='_'&&s[1]=='_'&&s[2]=='t')
 			return true;
 		return false;
-	}	
+	}
+
+	std::vector<Fields*> getConstStrings();
 };
 
 #endif

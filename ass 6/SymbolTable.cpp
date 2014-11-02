@@ -182,7 +182,16 @@ void SymbolTable::activationRecords()
 	}
 }
 
-
+std::vector<Fields*> SymbolTable::getConstStrings()
+{
+	vector<Fields*> temp;
+	For(i, 0, table.size()){
+		if(table[i].isStringConst){
+			temp.push_back(&table[i]);
+		}
+	}
+	return temp;
+}
 
 int getSize(const Type &t)
 {

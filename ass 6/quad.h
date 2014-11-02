@@ -38,7 +38,8 @@ enum{
 	QFUNCEND,
 	QCHAR2INT,
 	QINT2CHAR,
-	QPASS
+	QPASS,
+	QSTRING
 };
 
 /*

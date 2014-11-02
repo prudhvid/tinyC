@@ -644,7 +644,16 @@ primary_expression
 	| CONSTANT {$$=$1;}
 	| STRING_LITERAL
 		{
-
+			char* temp=strdup(yytext);
+			temp[strlen(yytext)-1]='\0';
+			temp++;
+			GENTEMP($$);
+			$$->type.push_back(ii(pointerT,0));
+			$$->type.push_back(ii(charT,0));
+			UPDATE($$);
+			$$->isStringConst=true;
+			$$->val.stringVal=temp;
+			quadArray.push_back(Quad(QSTRING,$$->name,temp));
 		}
 	| '(' expression ')'
 		{
@@ -832,14 +841,18 @@ unary_expression
 				break;
 			}
 			case '&':
-			
 					$$->type.push_back(ii(pointerT,0));
 					$$->type.insert($$->type.end(),$2->type.begin(),
 									$2->type.end());
-			
+					UPDATE($$);
+					if($2->isArray){
+						quadArray.push_back(Quad('+',$$->name,
+									$2->arrayBase->name
+							,$2->arrSize->name));
+					}
+				else
+					quadArray.push_back(Quad(QADDR,$$->name,$2->name));
 					
-				UPDATE($$);
-				quadArray.push_back(Quad(QADDR,$$->name,$2->name));
 				break;
 			default:
 				throw "error in processing unary operators";
@@ -1325,8 +1338,9 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 {
 	if(f1->type.size()==0||f2->type.size()==0)
 		throw "non initialized types";
-	//if(f1->type.size()>1||f2->type.size()>1)
-	//	throw "invalid type Changing";
+	if((f1->type.size()>1||f2->type.size()>1)&&
+		!f1->isArray&&!f1->isPointer)
+		throw "invalid type Changing";
 	int check=typeCheck(f1->type,f2->type);
 	
 	//f1->print();f2->print();

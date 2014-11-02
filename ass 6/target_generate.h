@@ -33,6 +33,21 @@ const string
 	TEST="test"
 	;
 
+inline const string getLabelName(int no)
+{
+	char w[10];
+	sprintf(w, ".L%d",no);
+	return string(w);
+}
+
+inline const string getStringLabelName(int no)
+{
+	char w[10];
+	sprintf(w, ".string%d",no);
+	return string(w);
+}
+
+
 
 //pushl eax 
 //popl ebx
@@ -71,7 +86,11 @@ inline void emit(const string x,int i,const string y,const string z)
 //addl $32(X),%eax
 inline void emit(const string x,Fields* f,const string z)
 {
-	if(!f->isConst)
+	if(f->isStringConst)
+		outIndex+=sprintf(outIndex+outs,"\t%s\t$%s,%s\n",x.c_str(),
+				getStringLabelName(f->stringLabel).c_str(),z.c_str());
+
+	else if(!f->isConst)
 		outIndex+= sprintf(outs+outIndex,"\t%s\t%d(%s),%s\n",x.c_str(),f->actOffset,EBP.c_str(),z.c_str() );
 	else{
 		int t=f->type[0].first,val;
@@ -103,14 +122,11 @@ inline void emitLabel(const string s)
 {
 	outIndex+= sprintf(outs+outIndex,"%s:\n",s.c_str() );
 }
-
-inline const string getLabelName(int no)
+inline void emitStringLabel(const string &labelName,const string & strdat)
 {
-	char w[10];
-	sprintf(w, ".L%d",no);
-	return string(w);
+	emitLabel(labelName);
+	outIndex+= sprintf(outs+outIndex,"\t.string\t\"%s\"\n",strdat.c_str() );
 }
-
 
 
 #endif

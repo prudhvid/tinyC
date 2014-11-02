@@ -142,6 +142,8 @@ void Quad::emit(Quad &q){
 				break;
 			case QPASS:printf("pass\n");
 				break;
+			case QSTRING:printf("%s=\"%s\"\n",q.res,q.arg1 );
+				break;
 			default:
 			if(q.op<=255)
 				printf("%s = %c %s\n",q.res,q.op,q.arg1 );

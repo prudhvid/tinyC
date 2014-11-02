@@ -25,14 +25,14 @@ int printi2(int a,int b);
 // 	*y=t;
 // }
 
-// void printArray(int *arr,int n)
-// {
-// 	int i=0;
+void printArray(int *arr,int n)
+{
+	int i=0;
 
-// 	for (i = 0; i < n; ++i){
-// 		printi2(arr[i],3);
-// 	}
-// }
+	for (i = 0; i < n; ++i){
+		printi2(arr[i],3);
+	}
+}
 // int main()
 // {
 	
@@ -101,77 +101,79 @@ int printi2(int a,int b);
 // }
 
 
-int main()
-{
-	int a=10,r1=5,r2=3,r3=8;
+// int main()
+// {
+// 	int a=10,r1=5,r2=3,r3=8;
 
-	//if statement simple if
-	if(r1==r2&&r2<=5&&r1+100*a>=56)
-	{
-		r3++;
-	}
+// 	//if statement simple if
+// 	if(r1==r2&&r2<=5&&r1+100*a>=56)
+// 	{
+// 		r3++;
+// 	}
 	
-	//if else complex
-	if(r1>=r2)
-	{
-		if(a+98<=908)
-			a++;
-		else {
-			if(a>5)
-				a--;
-			else
-				a=a+283*37;
-		}
-	}
-	else
-		r1++;
+// 	//if else complex
+// 	if(r1>=r2)
+// 	{
+// 		if(a+98<=908)
+// 			a++;
+// 		else {
+// 			if(a>5)
+// 				a--;
+// 			else
+// 				a=a+283*37;
+// 		}
+// 	}
+// 	else
+// 		r1++;
 
 
 
-	//for while do while all in one
-	int i,j=29,k=88;
-	for (i = 0; i < 20; ++i){
-		for (k=0; j!=9; ){
-			j++;
-			do{
-				while(k<=90)
-				k++;	
-			}while(k>20);
+// 	//for while do while all in one
+// 	int i,j=29,k=88;
+// 	for (i = 0; i < 20; ++i){
+// 		for (k=0; j!=9; ){
+// 			j++;
+// 			do{
+// 				while(k<=90)
+// 				k++;	
+// 			}while(k<20);
 			
-		}
+// 		}
 
-	}
+// 	}
 	
 
-	return 0;
-}
+// 	return 0;
+// }
 
 // void mergeSort(int *arr,int low,int mid,int high);
 // void partition(int *arr,int low,int high);
 
-// int main(){
+int main(){
    	
-// 	int merge[100],i,n;
+	int merge[100],i,n;
 
-// 	// printf("Enter the total number of elements: ");
-// 	// scanf("%d",&n);
-// 	readi(&n);
+	prints("Enter the total number of elements: ");
+	// scanf("%d",&n);
+	readi(&n);
 
-// 	// printf("Enter the elements which to be sort: ");
-// 	for(i=0;i<n;i++){
-// 		 readi(merge+i);
-// 		 // printi2(merge[i]/10,10);
-// 	}
-// 	// printArray(merge, n);
-// 	partition(merge,0,n-1);
+	prints("Enter the elements which to be sort: ");
+	for(i=0;i<n;i++){
+		 readi(&merge[i]);
+		 // printi2(merge[i]/10,10);
+	}
+	char* x="hello world :D :D :D\n";
+	prints(x);
+	// printArray(merge, n);
+	// partition(merge,0,n-1);
 
-// 	// printf("After merge sorting elements are: ");
-// 	// for(i=0;i<n;i++){
-// 	// 	add(merge, merge+i);
-// 	// }
-// 	// printArray(merge, n);
-//    return 0;
-// }
+	// printf("After merge sorting elements are: ");
+	// for(i=0;i<n;i++){
+	// 	add(merge, merge+i);
+	// }
+	// printArray(merge, n);
+   return 0;
+}
 
 // void partition(int *arr,int low,int high){
 
@@ -185,7 +187,7 @@ int main()
 // 		 printi2(mid,0);
 // 		 printArray(arr, high);
 // 		 // int x=mid+1;
-// 		 // partition(arr,x,high);
+// 		 partition(arr,mid+1,high);
 // 		 mergeSort(arr,low,mid,high);
 // 	}
 // }
@@ -231,4 +233,116 @@ int main()
 
 
 
+
+
+
+ 
+//  int strlen(char* s)
+// {	
+// 	int i;
+// 	for ( i = 0; s[i]!='\0'; ++i){
+		
+// 	}
+// 	return i;
+// }
+
+// void computeLPSArray(char *pat, int M, int *lps)
+// {
+//     int len = 0;  // lenght of the previous longest prefix suffix
+//     int i;
+ 
+//     lps[0] = 0; // lps[0] is always 0
+//     i = 1;
+ 
+//     // the loop calculates lps[i] for i = 1 to M-1
+//     while(i < M)
+//     {
+//        if(pat[i] == pat[len])
+//        {
+//          len++;
+//          lps[i] = len;
+//          i++;
+//        }
+//        else // (pat[i] != pat[len])
+//        {
+//          if( len != 0 )
+//          {
+//            // This is tricky. Consider the example AAACAAAA and i = 7.
+//            len = lps[len-1];
+ 
+//            // Also, note that we do not increment i here
+//          }
+//          else // if (len == 0)
+//          {
+//            lps[i] = 0;
+//            i++;
+//          }
+//        }
+//     }
+// }
+
+
+
+// void KMPSearch(char *pat, char *txt)
+// {
+//     int M = strlen(pat);
+//     int N = strlen(txt);
+ 
+//     // create lps[] that will hold the longest prefix suffix values for pattern
+//     int lps[1000];
+//     int j  = 0;  // index for pat[]
+ 
+//     // Preprocess the pattern (calculate lps[] array)
+//     computeLPSArray(pat, M, lps);
+ 
+//     int i = 0;  // index for txt[]
+//     while(i < N)
+//     {
+//       if(pat[j] == txt[i])
+//       {
+//         j++;
+//         i++;
+//       }
+ 
+//       if (j == M)
+//       {
+//         printi2(i-j,0);
+//         j = lps[j-1];
+//       }
+ 
+//       // mismatch after j matches
+//       else if(pat[j] != txt[i])
+//       {
+//         // Do not match lps[0..lps[j-1]] characters,
+//         // they will match anyway
+//         if(j != 0)
+//          j = lps[j-1];
+//         else
+//          i = i+1;
+//       }
+//     }
+//     // free(lps); // to avoid memory leak
+// }
+ 
+
+// int main()
+// {
+	
+// 	// char a[100],b[100];
+// 	// int i=0;
+// 	// for ( i = 0; i < 100; ++i){
+// 	// 	a[i]=('a'+i)%26+'a';
+// 	// }
+// 	// b[0]='a';
+// 	// b[1]='b';
+// 	// b[2]='c';
+// 	// b[3]='\0';
+// 	// a[i]='\0';
+// 	// prints(a);
+// 	// prints(b);
+// 	// KMPSearch(a, b);
+// 	char *x="skjnskjn";
+	
+// 	return 0;
+// }
 
