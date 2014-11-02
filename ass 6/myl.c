@@ -183,5 +183,5 @@ int printd(float f)
 
 int printi2(int a,int b)
 {
-	return printi(a)+printi(b);
+	return printi(a)+prints("   ")+printi(b)+prints("\n");
 }

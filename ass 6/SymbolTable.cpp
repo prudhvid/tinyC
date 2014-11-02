@@ -84,8 +84,8 @@ void SymbolTable::print()
 	sort(temp.begin(), temp.end(),sortCompare);
 	int c=1;
 	tr(temp,it)	{
-		printf("%d\t%s\t%d\t%d\t%d\t%d\t%d\t",c, it->name.c_str(),it->size,it->offset,
-			it->actOffset,it->isConst,nameindex[it->name]);
+		printf("%d\t%s\t%d\t%d\t%d\t%d\t",c, it->name.c_str(),it->size,it->offset,
+			it->actOffset,it->isConst);
 		For(i, 0, it->type.size()){
 			printf("(%s %d)  ",nameSizeArray[it->type[i].first].c_str(),
 								 it->type[i].second );
@@ -168,7 +168,7 @@ void SymbolTable::activationRecords()
 	}
 
 	For(i, 0, table.size()){
-		if(table[i].size==0){
+		if(table[i].isfname==true){
 			Fields* f=parent->lookup(table[i].name);
 			std::vector<Fields> v=f->nestedTable->getParamList();
 			int sS=0;
@@ -178,8 +178,6 @@ void SymbolTable::activationRecords()
 			}
 			if(sS>stackOffset)
 				stackOffset=sS;
-			printf("stackOffset=%d and sS=%d\n",
-			 stackOffset);
 		}
 	}
 }

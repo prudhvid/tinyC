@@ -1,5 +1,6 @@
 
-
+asm_file:compiler libmyl.a
+	./compiler
 
 compiler: y.tab.o lex.yy.o target_generate.o
 	g++ -o compiler lex.yy.o y.tab.o ass5_12CS10037_translator.o quad.o SymbolTable.o target_generate.o -lfl

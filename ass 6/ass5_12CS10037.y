@@ -722,6 +722,7 @@ postfix_expression
 		if(v.size()!=0)
 			throw "no arguments given";
 		GENTEMP($$);
+		f->isfname=true;
 		$$->type=f->type;
 		UPDATE($$);
 		quadArray.push_back(Quad(QCALL,$$->name,$1->name,"0"));
@@ -735,6 +736,7 @@ postfix_expression
 		if(v.size()!=$3->size())
 			throw "number of arguments not matching";
 
+		f->isfname=true;
 		vector<Quad> quadTemp;
 		For(i,0,v.size())
 		{
@@ -1216,11 +1218,11 @@ CONSTANT
 		UPDATE($$);
 		char *temp=strdup(yytext);
 		temp++;
-		//temp[strlen(temp)-1]='\0';
+		temp[strlen(temp)-1]='\0';
 		sprintf(temp,"%d",temp[0]);
 		$$->isConst=true;
-		$$->val.intVal=atoi(yytext);
-		$$->val.charVal=atoi(yytext);
+		$$->val.intVal=yytext[1];
+		$$->val.charVal=yytext[1];
 		quadArray.push_back(Quad($$->name,temp));
 	
 	}

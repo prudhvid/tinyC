@@ -109,10 +109,12 @@ struct Fields{
 		Fields* arrayBase;
 		int parNum;
 		int actOffset;
+		bool isfname;
 		ListType tl,fl;//true list and false lists
 		Fields():type(),loc(NULL),size(0),offset(0),nestedTable(NULL),
 				isConst(false),isBoolExp(false),arrSize(NULL),
-				isArray(false),isPointer(false),parNum(DEFAULT_PAR_NO)
+				isArray(false),isPointer(false),parNum(DEFAULT_PAR_NO),
+				isfname(false)
 				
 				{}
 

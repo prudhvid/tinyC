@@ -1,19 +1,5 @@
 	.file	"ass5_12CS10037_test.c"
 	.text
-	.globl	add
-	.type	add, @function
-add:
-	pushl	%ebp
-	movl	%esp, %ebp
-	subl	$16, %esp
-	movl	12(%ebp), %eax
-	movl	%eax, -4(%ebp)
-	movl	12(%ebp), %eax
-	movl	8(%ebp), %edx
-	addl	%edx, %eax
-	leave
-	ret
-	.size	add, .-add
 	.globl	main
 	.type	main, @function
 main:
@@ -21,19 +7,27 @@ main:
 	movl	%esp, %ebp
 	andl	$-16, %esp
 	subl	$32, %esp
-	movl	$5, 20(%esp)
-	movl	$199, 24(%esp)
-	movl	20(%esp), %eax
-	imull	24(%esp), %eax
-	subl	$905, %eax
+	movl	%gs:20, %eax
 	movl	%eax, 28(%esp)
-	leal	20(%esp), %eax
-	movl	%eax, (%esp)
-	call	readi
-	movl	$40, 4(%esp)
-	movl	$20, (%esp)
-	call	printi2
+	xorl	%eax, %eax
+	movb	$32, 23(%esp)
+	movb	$0, 24(%esp)
+	movl	$200, 16(%esp)
+	movl	$456, 16(%esp)
+	movl	$100, 12(%esp)
+	jmp	.L2
+.L3:
+	addl	$1, 12(%esp)
+.L2:
+	movl	12(%esp), %eax
+	cmpl	16(%esp), %eax
+	jle	.L3
 	movl	$0, %eax
+	movl	28(%esp), %edx
+	xorl	%gs:20, %edx
+	je	.L5
+	call	__stack_chk_fail
+.L5:
 	leave
 	ret
 	.size	main, .-main
