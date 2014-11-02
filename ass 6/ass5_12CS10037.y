@@ -1339,7 +1339,7 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 	if(f1->type.size()==0||f2->type.size()==0)
 		throw "non initialized types";
 	if((f1->type.size()>1||f2->type.size()>1)&&
-		!f1->isArray&&!f1->isPointer)
+		!f1->isArray&&!f1->isPointer&&f1->type[0].first!=pointerT)
 		throw "invalid type Changing";
 	int check=typeCheck(f1->type,f2->type);
 	
@@ -1352,8 +1352,11 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 
 	int greaterT=min(t1,t2),lesserT=max(t1,t2);
 
-	if(lesserT==arrayT)
+	if(lesserT==arrayT||lesserT==pointerT)
+	{
 		swap(lesserT,greaterT);
+	}
+		
 	//by def arg1 holds the greater type
 	if(greaterT!=t1)
 		swap(arg1,arg2);
@@ -1373,6 +1376,7 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 		}
 	}
 	else if(greaterT==intT){
+		
 		arg2=char2int(arg2);
 		res->type.push_back(ii(intT,0));
 		UPDATE(res);
@@ -1386,7 +1390,7 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 		res->type.push_back(ii(doubleT,0));
 		UPDATE(res);
 	}
-	else if(greaterT==arrayT)
+	else if(greaterT==arrayT||greaterT==pointerT)
 	{
 		if(lesserT>charT||lesserT==doubleT)
 			throw "unsupprted array operations";
@@ -1408,8 +1412,7 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 			quadArray.push_back(Quad('+',res->name,arg1->name,
 									f->name));
 			res->type.clear();
-			res->type.push_back(ii(pointerT,0));
-			res->type.insert(res->type.begin()+1,temp.begin(),temp.end());
+			res->type=arg1->type;
 			UPDATE(res);
 			return res;
 		}
@@ -1508,7 +1511,7 @@ Fields* checkTypesNAssign(Fields* f1,Fields* f2)
 {
 	bool res=typeCheck(f1->type,f2->type);
 
-
+	
 	if(!res){
 		if(f1->type.size()>1||f2->type.size()>1)
 			throw "assigning types dont match";
