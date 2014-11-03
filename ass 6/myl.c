@@ -185,3 +185,15 @@ int printi2(int a,int b)
 {
 	return printi(a)+prints("   ")+printi(b)+prints("\n");
 }
+int printc(char a)
+{
+	char word[2];
+	word[0]=a;
+	word[1]='\0';
+	prints(word);
+	return 1;
+}
+int reads(char*a)
+{
+	return asmread(a, 200);
+}

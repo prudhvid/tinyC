@@ -9,4 +9,6 @@ int readf(float *); // return value is error or OK
 int printd(float);
 int prints(char *);
 int printi2(int a,int b);
+int printc(char a);
+int reads(char*a);
 #endif

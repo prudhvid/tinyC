@@ -1339,8 +1339,9 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 	if(f1->type.size()==0||f2->type.size()==0)
 		throw "non initialized types";
 	if((f1->type.size()>1||f2->type.size()>1)&&
-		!f1->isArray&&!f1->isPointer&&f1->type[0].first!=pointerT)
-		throw "invalid type Changing";
+		!f1->isArray&&!f1->isPointer&&f1->type[0].first!=pointerT&&
+		f1->type[0].first!=arrayT)
+		throw "invalid type Changing changeTypeNEmit";
 	int check=typeCheck(f1->type,f2->type);
 	
 	//f1->print();f2->print();
@@ -1412,7 +1413,10 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 			quadArray.push_back(Quad('+',res->name,arg1->name,
 									f->name));
 			res->type.clear();
-			res->type=arg1->type;
+			Type temp2;
+			temp2.push_back(ii(pointerT,0));
+			temp2.insert(temp2.begin()+1,temp.begin(),temp.end());
+			res->type=(greaterT==pointerT)?arg1->type:temp2;
 			UPDATE(res);
 			return res;
 		}
@@ -1433,7 +1437,7 @@ Fields* changeTypeNEmit(Fields* f1,Fields* f2,int op)
 pair<Fields*,Fields*> changeTypeNReturn(Fields* f1,Fields* f2)
 {
 	if(f1->type.size()>1||f2->type.size()>1)
-		throw "invalid type Changing";
+		throw "invalid type Changing changeTypeNReturn";
 
 	Fields* arg1=f1,*arg2=f2;
 

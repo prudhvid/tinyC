@@ -30,7 +30,7 @@ const string
 	JE="je",JNE="jne",JL="jl",JLE="jle",JG="jg",JGE="jge",
 	JMP="jmp",JZ="jz",JNZ="jnz",
 	SETE="sete",SETNE="setne",SETL="setl",SETLE="setle",SETG="setg",SETGE="setge",
-	TEST="test"
+	TEST="test",NEGL="negl",NEGB="negb"
 	;
 
 inline const string getLabelName(int no)

@@ -75,7 +75,7 @@ void SymbolTable::print()
 	
 	
 	printf("\n--------------------SymbolTable---------------------------\n");
-	printf("no of params=%d\n",paramNum );
+	printf("no of params=%d and stackOffset=%d\n",paramNum,stackOffset );
 	std::vector<Fields> pars=getParamList();
 	tr(pars,it)
 		printf("%s   ",it->name.c_str() );

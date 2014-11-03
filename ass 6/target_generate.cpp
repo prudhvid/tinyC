@@ -145,16 +145,15 @@ void functionStart(const Quad& q)
 	For(i, 0, v.size()){
 		v[i]->stringLabel=stringLabelNo;
 		string label=getStringLabelName(stringLabelNo);
-		
 		emitStringLabel(label, v[i]->val.stringVal);
-
 		stringLabelNo++;
 	}
+	
 	emitLabel(q.res);
 	emit(PUSHL,EBP);
 	emit(MOVL,ESP,EBP);
-	if(currst->localOff-currst->stackOffset<0)
-		emit(ADDL,currst->localOff-currst->stackOffset,ESP);
+	if(currst->localOff-currst->stackOffset-4<0)
+		emit(ADDL,currst->localOff-currst->stackOffset-4,ESP);
 	paramESPoffset=0;
 }
 
@@ -363,7 +362,7 @@ void binaryOp(const Quad& q)
 		case QARRDEREF:
 		{
 			//res[arg1]=arg2
-			int s=getSize(currst->search(q.res)->type);
+			int s=getSize(currst->search(q.arg2)->type);
 			string reg=(s==1)?AL:EaX;
 			string reg2=(s==1)?BL:EbX;
 			string op=(s==1)?MOVB:MOVL;
@@ -476,8 +475,8 @@ void unaryOp(const Quad&q)
 			int s=getSize(res->type);
 			string reg=(s==1)?AL:EaX;
 			string op=(s==1)?MOVB:MOVL;
-			emit(op,arg,reg);
-			emit(op,0,reg,reg);
+			emit(MOVL,arg,EaX);
+			emit(op,0,EaX,reg);
 			emit(op,reg,res);
 		}
 		break;
@@ -488,10 +487,9 @@ void unaryOp(const Quad&q)
 			string reg=(s==1)?AL:EaX;
 			string op=(s==1)?MOVB:MOVL;
 			string reg2=(s==1)?BL:EbX;
-			emit(op,arg,reg);
-			emit(op,res,reg2);
-			emit(op,reg,0,reg2);
-			
+			emit(op,arg,reg2);
+			emit(MOVL,res,EaX);
+			emit(op,reg2,0,EaX);
 		}
 		break;
 
@@ -500,7 +498,21 @@ void unaryOp(const Quad&q)
 
 		}
 		break;
+
+		case '-':
+		{
+			//unary minus
+			int s=getSize(res->type);
+			string reg=(s==1)?AL:EaX;
+			string op=(s==1)?MOVB:MOVL;
+			string negop=(s==1)?NEGB:NEGL;
+			emit(op,arg,reg);
+			emit(negop,reg);
+			emit(op,reg,res);
+		}
+		break;
 	}
+
 }
 
 
