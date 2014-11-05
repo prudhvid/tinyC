@@ -25,6 +25,7 @@ int asmread(char* buff,int count)
 		:"=r"(readBytes)
 		:"c"(buff), "d"(count)
 	) ;}
+	
 	return readBytes-1;
 }
 int prints(char *word)
@@ -195,5 +196,7 @@ int printc(char a)
 }
 int reads(char*a)
 {
-	return asmread(a, 200);
+	int x= asmread(a, 200);
+	a[x]='\0';
+	return x;
 }

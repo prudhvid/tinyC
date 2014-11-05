@@ -174,7 +174,7 @@ void assignmentOpe(const Quad& q)
 	Fields* res,*arg;
 	res=currst->search(q.res);
 	if(!res)
-		throw "unexpected symbol in quads";
+		return;
 
 	if(res->isConst)
 	{

@@ -86,6 +86,7 @@ int main()
 {
     int arr[10];
     int n,i;
+    prints("enter the number of elements and all the elements:");
     readi(&n);
     for (i = 0; i < n; ++i){
       readi(&arr[i]);
