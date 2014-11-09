@@ -21,6 +21,7 @@ int printf(char*s,int a)
 	return prints(s)+printi(a);
 }
 
+
 int strlen(char* s)
 {
 	int i=0;
@@ -45,6 +46,7 @@ int main()
 {
   int i=0,j=0,player=0,lead=0,nrows=0,ncols=0,winner=0;
   int again='q';
+  
   char four_X_four[4][4];
   while(winner == '\0') {
   for(i = 0; i < 4; i++) {

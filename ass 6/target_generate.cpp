@@ -56,7 +56,7 @@ void removeGotoNLabel()
 
 	for (int i = 0; i < quadArray.size(); ++i){
 		if(quadArray[i].op<=QGOTO&&quadArray[i].op!=0){
-			
+			int index=quadArray[i].gotoIndex;
 			if(labelArray[quadArray[i].gotoIndex]==NO_LABEL){
 				labelArray[quadArray[i].gotoIndex]=labelNo++;
 			}
@@ -547,8 +547,10 @@ void globalsEmit(string filename)
 
 int main(int argc, char const *argv[])
 {	
-
-	freopen("ass5_12CS10037_test.c", "r", stdin);
+	const char* infile=(argc==1)?"ass5_12CS10037_test.c":argv[1];
+	
+	freopen(infile, "r", stdin);
+	
 	// freopen("stat_test_output","w",stdout);
 	FILE *fp= fopen("out.s", "w");
 	int token;
@@ -568,7 +570,7 @@ int main(int argc, char const *argv[])
 		Quad::emit(q);
 	}
 	_GLOBST->print();
-	globalsEmit("ass5_12CS10037_test.c");
+	globalsEmit(infile);
 	for (int i = 0; i < quadArray.size(); ++i){
 		labelArray[i]=NO_LABEL;
 	}
