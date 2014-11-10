@@ -553,6 +553,7 @@ int main(int argc, char const *argv[])
 	
 	// freopen("stat_test_output","w",stdout);
 	FILE *fp= fopen("out.s", "w");
+	freopen("3ADC", "w", stdout);
 	int token;
 	std::string s;
 	try{
@@ -560,9 +561,10 @@ int main(int argc, char const *argv[])
 	}
 	catch(const char* p)
 	{
-		printf("\nERROR: %s on line_number %d\n",p,line_number+1 );
+		fprintf(stdout,"\nERROR: %s on line_number %d\n",p,line_number+1 );
 		st->print();
 	}
+
 	for (int i = 0; i < quadArray.size(); ++i){
 		/* code */
 		Quad &q=quadArray[i];
@@ -575,12 +577,7 @@ int main(int argc, char const *argv[])
 		labelArray[i]=NO_LABEL;
 	}
 	removeGotoNLabel();
-	// for (int i = 0; i < quadArray.size(); ++i){
-	// 	/* code */
-	// 	Quad &q=quadArray[i];
-	// 	printf("%3d:",i );
-	// 	Quad::emit(q);
-	// }
+	
 	
 	try{
 
@@ -611,5 +608,8 @@ int main(int argc, char const *argv[])
 	}
 	fprintf(fp, "%s\n", outs);	
 	fclose(fp);
+	
+	system("gcc -m32 out.s -L. -lmyl");
 	return 0;
+
 }

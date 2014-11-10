@@ -28,7 +28,7 @@ SymbolTable::SymbolTable()
 {
 	nameindex.clear();
 	table.clear();
-	table.reserve(100000);
+	table.reserve(900000);
 }
 
 Fields* SymbolTable::gentemp(SymbolTable &st)

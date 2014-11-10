@@ -6,7 +6,7 @@
 // the 4-address quads for KMP algorithm
 
 
-//I've implemented almost all the things given except "function declarations"
+
 
 
 
@@ -20,7 +20,10 @@ int printf(char*s,int a)
 {
 	return prints(s)+printi(a);
 }
-
+int printf2(char*s,int a,int b)
+{
+    return prints(s)+printi(a)+printi(b);
+}
 
 int strlen(char* s)
 {
@@ -29,140 +32,84 @@ int strlen(char* s)
 	return i;
 }
 
+int determinant(int (*f)[20],int x)
+{
+  int pr,c[20],d=0,b[20][20],j,p,q,t;
+  if(x==2)
+  {
+    d=0;
+    d=(f[1][1]*f[2][2])-(f[1][2]*f[2][1]);
+    return(d);
+   }
+  else
+  {
+    for(j=1;j<=x;j++)
+    {       
+      int r=1,s=1;
+      for(p=1;p<=x;p++)
+        {
+          for(q=1;q<=x;q++)
+            {
+              if(p!=1&&q!=j)
+              {
+                b[r][s]=f[p][q];
+                s++;
+                if(s>x-1)
+                 {
+                   r++;
+                   s=1;
+                  }
+               }
+             }
+         }
+     for(t=1,pr=1;t<=(1+j);t++)
+     pr=(-1)*pr;
+     c[j]=pr*determinant(b,x-1);
+     }
+     for(j=1,d=0;j<=x;j++)
+     {
+       d=d+(f[1][j]*c[j]);
+      }
+     return(d);
+   }
+}
 
-void print_grid(char (*board)[4]);
-int didwin(char (*board)[4]);
 
+int adn(int a,int b)
+{
 
-
-
-
-  //Purpose: Two players battle in the classic game tic tac toe until one is proclaimed victor!
-
-
+}
 
 
 int main()
 {
-  int i=0,j=0,player=0,lead=0,nrows=0,ncols=0,winner=0;
-  int again='q';
+  int i,j,m;
+  int a[20][20];
   
-  char four_X_four[4][4];
-  while(winner == '\0') {
-  for(i = 0; i < 4; i++) {
-    for(j = 0; j<4; j++) {
-  four_X_four[i][j] = '\0';
-    }
-  }
-  for( i = 0; i<16 && winner==0; i++)
-    { 
-    print_grid(four_X_four);
-  player = i%2 + 1;
-  if(player==1){
-    printf("\n Player ", player); 
-    prints (" : ");
-      printc('X');prints(" ");
-  }
-  else if(player==2) {
-    printf("\n Player ", player); 
-    prints (" : ");
-      printc('0');prints(" ");
-  }
-  readi( &lead);
-  lead--;
-  ncols = lead%4;
-  lead = lead - ncols;
-  nrows = lead/4;  
-  if(lead<0 || lead>16 || four_X_four[nrows][ncols]=='X' || four_X_four[nrows][ncols]=='O') {
-    prints("Space is already taken, please try again"); 
-    i--;
-  }
-  else {
-    four_X_four[nrows][ncols] = (player == 1) ? 'X' : 'O';
-  }
-  winner = didwin(four_X_four);
-    }
-  if(winner != '\0') {
-    prints("Winner was ");printc(winner); prints(" Good job.\n");
-  }
-  else {
-    prints("No winner this round. Try again.");
+  prints("\n\nEnter order of matrix : ");
+  readi(&m);
+  prints("\nEnter the elements of matrix\n");
+  for(i=1;i<=m;i++)
+  {
+  for(j=1;j<=m;j++)
+  {
+  printf("a[",i); printf("][",j);prints("] ");
+  readi(&a[i][j]);
   }
   }
-  return 0;
-}
-void print_grid(char (*board)[4]) {
-  int i,j;
-  prints("\n\n");
-  for(i = 0; i < 4; i++) {
-  for(j = 0; j < 4; j++) {
-    if(board[i][j] == '\0') {
-  printf(" ", 4*(i)+(j+1));prints(" ");
-    }
-    else {
-      printc(' ');
-  printc(board[i][j]);printc(' ');
-    }
-    if(j!=4) { prints("|"); }
-  }
-  if(i != 4) {
-    prints("\n-------------------\n");
-  }
-  }
-}
+  prints("\n\n---------- Matrix A is --------------\n");   
+  for(i=1;i<=m;i++)
+     {
+          prints("\n");
+          for(j=1;j<=m;j++)
+          {    
+               printf("\t",a[i][j]);prints("\t");
+          }
+     }
+  prints("\n \n");
+  int res=determinant(&a[0],m);
 
-int didwin(char (*board)[4]) {
-  int i,j;
-  char current;
-  char winner = '\0';
-
-  //Iter over rows to check for winner
-  for(i = 0; i<4; i++) {
-  current = board[i][0];
-  for(j = 0; j < 4; j++) {
-    if(board[i][j] != current) {
-  current = '\0';
-    }
-  }
-  if(current != '\0') {
-    winner = current;
-  }
-  }
-
-  //Iter over columns
-  for(i = 0; i<4; i++) {
-  current = board[0][i];
-  for(j = 0; j < 4; j++) {
-    if(board[j][i] != current) {
-  current = '\0';
-    }
-  }
-  if(current != '\0') {
-    winner = current;
-  }
-  }
-
-  //Iter over diagonals
-  current = board[0][0];
-  for(i = 0; i < 4; i++) {
-  if(board[i][i] != current) {
-    current = '\0';
-  }
-  }
-  if(current != '\0') {
-  winner = current;
-  }
+  printf("\n Determinant of Matrix A is  ",res);prints("\n");
   
-  current = board[0][3];
-  for(i = 0; i <4; i++) {
-  if(board[i][4-i-1] != current) {
-    current = '\0';
-  }
-  }
-  if(current != '\0') {
-  winner = current;
-  }
-  return winner;
 }
-
-
+ 

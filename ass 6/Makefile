@@ -1,9 +1,9 @@
-link_stp:compiler asm_file
-	gcc -m32 out.s -L. -lmyl
+# link_stp:compiler asm_file
+# 	gcc -m32 out.s -L. -lmyl
 
 asm_file:compiler libmyl.a
 	./compiler
-	 gcc -m32 -fno-asynchronous-unwind-tables -S ass5_12CS10037_test.c 
+	gcc -m32 -fno-asynchronous-unwind-tables -S ass5_12CS10037_test.c 
 
 compiler: y.tab.o lex.yy.o target_generate.o
 	g++ -o compiler lex.yy.o y.tab.o ass5_12CS10037_translator.o quad.o SymbolTable.o target_generate.o -lfl
@@ -40,4 +40,4 @@ myl.o: myl.c myl.h
 	cc -Wall -m32 -c myl.c
 
 clean:
-	rm y.tab.* lex.yy.c *.o compiler out.s y.output *.a
+	rm y.tab.* lex.yy.c *.o out.s y.output *.a 3ADC a.out
